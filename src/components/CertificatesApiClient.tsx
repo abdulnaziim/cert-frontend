@@ -176,7 +176,9 @@ export default function CertificatesApiClient() {
   }
 
   useEffect(() => {
-    fetchCertificates();
+    if (backendUrl) {
+      fetchCertificates();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [backendUrl]);
 
@@ -202,7 +204,11 @@ export default function CertificatesApiClient() {
         </Button>
       </Box>
 
-      {error && <Alert severity="error">{error}</Alert>}
+      {error && (
+        <Alert severity="error" onClose={() => setError("")} sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
       {loading && <LinearProgress color="secondary" sx={{ borderRadius: 1 }} />}
 
       {/* 2. Create Certificate Form */}
