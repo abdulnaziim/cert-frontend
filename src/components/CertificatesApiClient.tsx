@@ -101,22 +101,23 @@ export default function CertificatesApiClient() {
 
       // 1. Create on Backend (Metadata & PDF)
       const formData = new FormData();
-      formData.append("recipient_name", recipientName);
-      formData.append("recipient_email", recipientEmail);
-      if (recipientAddress) formData.append("recipient_address", recipientAddress);
-      else formData.append("recipient_address", address); // Default to issuer if not specified? Or require it? User said "defaults to connected" in other file, but typically cert is for student.
-      // If student address is blank, we can't mint to them. Let's assume input or fallback.
-      // Actually, if it's blank, the backend might complain if we try to mint.
-      // For this flow, we need a target address. 
-      const targetAddress = recipientAddress || address;
+      formData.append("recipient_name", recipientName.trim());
+      formData.append("recipient_email", recipientEmail.trim());
+      if (recipientAddress) formData.append("recipient_address", recipientAddress.trim());
+      else formData.append("recipient_address", address);
 
-      formData.append("title", title);
-      if (description) formData.append("description", description);
+      const targetAddress = recipientAddress ? recipientAddress.trim() : address;
+
+      formData.append("title", title.trim());
+      if (description) formData.append("description", description.trim());
       if (file) formData.append("certificate_file", file);
       formData.append("skip_blockchain", "1"); // IMPORTANT: Don't mint on server
 
       const res = await fetch(`${backendUrl}/api/certificates`, {
         method: "POST",
+        headers: {
+          "Accept": "application/json",
+        },
         body: formData,
       });
 
