@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useAccount, useWriteContract, usePublicClient } from "wagmi";
+import { CERT_NFT_ABI, getCertNftAddress } from "../lib/contracts";
 import {
   Box,
   Button,
@@ -14,7 +16,8 @@ import {
   TextField,
   Typography,
   LinearProgress,
-  Alert
+  Alert,
+  CircularProgress
 } from "@mui/material";
 import {
   Refresh as RefreshIcon,
@@ -26,6 +29,7 @@ import {
   PictureAsPdf as PdfIcon,
   OpenInNew as OpenInNewIcon
 } from "@mui/icons-material";
+import toast from "react-hot-toast";
 
 type Certificate = {
   id: number;
@@ -50,11 +54,17 @@ type PaginatedResponse = {
 };
 
 export default function CertificatesApiClient() {
+  const { address, isConnected } = useAccount();
+  const { writeContractAsync } = useWriteContract();
+  const publicClient = usePublicClient();
+  const nftAddress = getCertNftAddress();
+
   const backendUrl = useMemo(() => {
     return process.env.NEXT_PUBLIC_BACKEND_URL?.replace(/\/$/, "") || "http://127.0.0.1:8000";
   }, []);
 
   const [loading, setLoading] = useState<boolean>(false);
+  const [minting, setMinting] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
   const [certs, setCerts] = useState<Certificate[]>([]);
 
@@ -64,9 +74,6 @@ export default function CertificatesApiClient() {
   const [title, setTitle] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [file, setFile] = useState<File | null>(null);
-
-  // Verification state removed
-
 
   async function fetchCertificates() {
     setLoading(true);
@@ -86,14 +93,27 @@ export default function CertificatesApiClient() {
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+    setMinting(true);
+
     try {
+      if (!isConnected || !address) throw new Error("Please connect your wallet first.");
+      if (!nftAddress) throw new Error("Contract address not configured.");
+
+      // 1. Create on Backend (Metadata & PDF)
       const formData = new FormData();
       formData.append("recipient_name", recipientName);
       formData.append("recipient_email", recipientEmail);
       if (recipientAddress) formData.append("recipient_address", recipientAddress);
+      else formData.append("recipient_address", address); // Default to issuer if not specified? Or require it? User said "defaults to connected" in other file, but typically cert is for student.
+      // If student address is blank, we can't mint to them. Let's assume input or fallback.
+      // Actually, if it's blank, the backend might complain if we try to mint.
+      // For this flow, we need a target address. 
+      const targetAddress = recipientAddress || address;
+
       formData.append("title", title);
       if (description) formData.append("description", description);
       if (file) formData.append("certificate_file", file);
+      formData.append("skip_blockchain", "1"); // IMPORTANT: Don't mint on server
 
       const res = await fetch(`${backendUrl}/api/certificates`, {
         method: "POST",
@@ -102,8 +122,42 @@ export default function CertificatesApiClient() {
 
       if (!res.ok) {
         const t = await res.text();
-        throw new Error(`Create failed: ${res.status} ${t}`);
+        throw new Error(`Backend creation failed: ${res.status} ${t}`);
       }
+
+      const certData = await res.json();
+      const ipfsCid = certData.ipfs_cid;
+      const certId = certData.id;
+
+      if (!ipfsCid) throw new Error("Backend did not return IPFS CID.");
+
+      // 2. Mint on Blockchain (User Signs)
+      console.log("Minting for", targetAddress, "CID:", ipfsCid);
+
+      const hash = await writeContractAsync({
+        abi: CERT_NFT_ABI,
+        address: nftAddress,
+        functionName: "mint",
+        args: [targetAddress as `0x${string}`, ipfsCid],
+      });
+
+      toast.success("Transaction sent! Waiting for confirmation...");
+
+      // 3. Wait for Receipt
+      if (publicClient) {
+        await publicClient.waitForTransactionReceipt({ hash });
+      }
+
+      // 4. Confirm to Backend
+      await fetch(`${backendUrl}/api/certificates/${certId}/confirm`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ transaction_hash: hash })
+      });
+
+      toast.success("Certificate successfully issued & verified!");
+
+      // Cleanup
       setRecipientName("");
       setRecipientEmail("");
       setRecipientAddress("");
@@ -111,12 +165,15 @@ export default function CertificatesApiClient() {
       setDescription("");
       setFile(null);
       await fetchCertificates();
+
     } catch (e: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
-      setError(e?.message || "Failed to create certificate");
+      console.error(e);
+      setError(e?.shortMessage || e?.message || "Failed to create certificate");
+      toast.error("Failed to issue certificate.");
+    } finally {
+      setMinting(false);
     }
   }
-
-
 
   useEffect(() => {
     fetchCertificates();
@@ -131,14 +188,14 @@ export default function CertificatesApiClient() {
         <Box>
           <Typography variant="h5" fontWeight="700">Certificate Manager</Typography>
           <Typography variant="body2" color="text.secondary">
-            Integrated with {backendUrl}
+            Issuing as: {address ? `${address.slice(0, 6)}...${address.slice(-4)}` : "Not connected"}
           </Typography>
         </Box>
         <Button
           variant="outlined"
           startIcon={<RefreshIcon />}
           onClick={fetchCertificates}
-          disabled={loading}
+          disabled={loading || minting}
           size="small"
         >
           {loading ? "Syncing..." : "Refresh Data"}
@@ -149,7 +206,18 @@ export default function CertificatesApiClient() {
       {loading && <LinearProgress color="secondary" sx={{ borderRadius: 1 }} />}
 
       {/* 2. Create Certificate Form */}
-      <Paper sx={{ p: 4, borderRadius: 3 }}>
+      <Paper sx={{ p: 4, borderRadius: 3, position: 'relative', overflow: 'hidden' }}>
+        {minting && (
+          <Box sx={{
+            position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+            bgcolor: 'rgba(255,255,255,0.8)', zIndex: 10,
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
+          }}>
+            <CircularProgress size={60} />
+            <Typography sx={{ mt: 2, fontWeight: 600 }}>Please sign the transaction in your wallet...</Typography>
+          </Box>
+        )}
+
         <Typography variant="h6" fontWeight="600" gutterBottom sx={{ mb: 3 }}>
           Issue New Certificate
         </Typography>
@@ -182,8 +250,9 @@ export default function CertificatesApiClient() {
             <Grid size={{ xs: 12 }}>
               <TextField
                 label="Student Wallet Address (0x...)"
-                placeholder="Optional - Required for NFT Issuance"
+                placeholder="Required for direct issuance"
                 fullWidth
+                required
                 value={recipientAddress}
                 onChange={(e) => setRecipientAddress(e.target.value)}
                 InputProps={{
@@ -238,10 +307,10 @@ export default function CertificatesApiClient() {
                 variant="contained"
                 fullWidth
                 size="large"
-                disabled={loading || !recipientName || !recipientEmail || !title}
+                disabled={loading || minting || !recipientName || !recipientEmail || !title || !isConnected || !recipientAddress}
                 sx={{ mt: 1 }}
               >
-                Create Certificate & Issue NFT
+                {minting ? "Processing Transaction..." : isConnected ? "Sign & Issue Certificate" : "Connect Wallet to Issue"}
               </Button>
             </Grid>
           </Grid>
