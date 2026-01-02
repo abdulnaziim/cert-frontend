@@ -38,10 +38,10 @@ export default function Home() {
                                 <Box>
                                     <ChipLatest />
                                     <Typography variant="h2" fontWeight="800" sx={{ mt: 3, mb: 2, background: 'linear-gradient(45deg, #1e40af 30%, #3b82f6 90%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', letterSpacing: '-0.02em' }}>
-                                        The Trusted Standard <br /> for Digital Records
+                                        Secure Blockchain <br /> Certificates
                                     </Typography>
                                     <Typography variant="h6" color="text.secondary" sx={{ mb: 5, lineHeight: 1.6, maxWidth: 600, fontWeight: 500 }}>
-                                        Empowering institutions to issue tamper-proof certificates that students own forever. Instant global verification, secured by Ethereum.
+                                        Issue and verify academic credentials instantly with the power of Ethereum.
                                     </Typography>
 
                                     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
