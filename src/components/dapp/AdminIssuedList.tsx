@@ -50,11 +50,27 @@ export default function AdminIssuedList() {
                 }
             }
 
-            const res = await fetch(`${backendUrl}/api/certificates`, { cache: "no-store" });
-            if (!res.ok) throw new Error(`Failed to load: ${res.status}`);
-            const json: PaginatedResponse = await res.json();
+            const res = await fetch(`${backendUrl}/api/certificates`, {
+                cache: "no-store",
+                headers: { "Accept": "application/json" }
+            });
+
+            if (!res.ok) {
+                const t = await res.text();
+                throw new Error(`Failed to load: ${res.status}`);
+            }
+
+            let json: PaginatedResponse;
+            try {
+                json = await res.json();
+            } catch (e) {
+                console.error("Invalid JSON:", e);
+                throw new Error("Invalid response from server");
+            }
+
             setCerts(json?.data || []);
         } catch (e: any) {
+            console.error(e);
             setError(e?.message || "Failed to fetch certificates");
         } finally {
             setLoading(false);
@@ -83,7 +99,7 @@ export default function AdminIssuedList() {
                 </Button>
             </Box>
 
-            {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
+            {error && <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError("")}>{error}</Alert>}
             {loading && <LinearProgress sx={{ mb: 3 }} />}
 
             {certs.length === 0 && !loading ? (
