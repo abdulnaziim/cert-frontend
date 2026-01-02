@@ -37,12 +37,11 @@ export default function Home() {
                             <Zoom in={true} style={{ transitionDelay: '100ms' }}>
                                 <Box>
                                     <ChipLatest />
-                                    <Typography variant="h2" fontWeight="800" sx={{ mt: 3, mb: 2, background: 'linear-gradient(45deg, #1e40af 30%, #3b82f6 90%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                                        Blockchain Credentialing <br /> for the Modern Era
+                                    <Typography variant="h2" fontWeight="800" sx={{ mt: 3, mb: 2, background: 'linear-gradient(45deg, #1e40af 30%, #3b82f6 90%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', letterSpacing: '-0.02em' }}>
+                                        The Trusted Standard <br /> for Digital Records
                                     </Typography>
-                                    <Typography variant="h6" color="text.secondary" sx={{ mb: 5, lineHeight: 1.6, maxWidth: 600 }}>
-                                        Issue, Verify, and Manage academic certificates with the security of Ethereum.
-                                        Tamper-proof, instant verification, and fully decentralized.
+                                    <Typography variant="h6" color="text.secondary" sx={{ mb: 5, lineHeight: 1.6, maxWidth: 600, fontWeight: 500 }}>
+                                        Empowering institutions to issue tamper-proof certificates that students own forever. Instant global verification, secured by Ethereum.
                                     </Typography>
 
                                     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
@@ -96,7 +95,7 @@ export default function Home() {
                                     <FeatureCard
                                         icon={<VerifiedUser fontSize="large" color="secondary" />}
                                         title="For Verifiers"
-                                        desc="Instantly validate credentials without calling the university. 100% Trustless."
+                                        desc="Instantly validate credentials with cryptographic certainty. No intermediaries required."
                                     />
                                 </Stack>
                             </Zoom>
@@ -131,7 +130,7 @@ function ChipLatest() {
         <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, bgcolor: 'rgba(59, 130, 246, 0.1)', px: 2, py: 0.8, borderRadius: 10, mb: 2 }}>
             <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#3b82f6' }} />
             <Typography variant="caption" fontWeight="700" color="primary">
-                NOW SUPPORTING MULTI-ISSUER MINTING
+                ENTERPRISE-GRADE INFRASTRUCTURE
             </Typography>
         </Box>
     );
