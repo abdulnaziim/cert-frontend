@@ -6,6 +6,7 @@ import { Verified as VerifiedIcon, OpenInNew as OpenInNewIcon, CloudUpload as Cl
 import { useAccount, useWriteContract, usePublicClient } from "wagmi";
 import { CERT_NFT_ABI, getCertNftAddress } from "../../lib/contracts";
 import toast from "react-hot-toast";
+import Link from "next/link";
 
 export type Certificate = {
     id: number;
@@ -175,6 +176,7 @@ export default function CertificateCard({ cert }: CertificateCardProps) {
                         </Button>
                         {(cert.token_id || cert.on_chain_id) && (
                             <Button
+                                component={Link}
                                 size="small"
                                 variant="text"
                                 color="primary"

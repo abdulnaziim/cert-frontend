@@ -3,6 +3,8 @@
 import { Box, Button, Container, Grid, Paper, Typography } from "@mui/material";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 
+import Link from "next/link";
+
 export default function StatsCtaFooter() {
   return (
     <>
@@ -14,7 +16,7 @@ export default function StatsCtaFooter() {
           <Typography sx={{ color: "#9ca3af", mt: 1 }}>Connect your wallet to view your certificates or proceed to the admin panel to issue.</Typography>
           <Box sx={{ display: "flex", justifyContent: "center", gap: 2, mt: 3 }}>
             <ConnectButton />
-            <Button href="/admin" variant="outlined" color="secondary">Go to Admin</Button>
+            <Button component={Link} href="/admin" variant="outlined" color="secondary">Go to Admin</Button>
           </Box>
         </Container>
       </Box>
