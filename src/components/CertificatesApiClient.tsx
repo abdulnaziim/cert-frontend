@@ -84,7 +84,8 @@ export default function CertificatesApiClient() {
       const json: PaginatedResponse = await res.json();
       setCerts(json?.data || []);
     } catch (e: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
-      setError(e?.message || "Failed to fetch certificates");
+      const msg = `${e?.name || 'Error'}: ${e?.message || "Failed to fetch certificates"} (${backendUrl})`;
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -175,8 +176,9 @@ export default function CertificatesApiClient() {
 
     } catch (e: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
       console.error(e);
-      setError(e?.shortMessage || e?.message || "Failed to create certificate");
-      toast.error("Failed to issue certificate.");
+      const msg = `${e?.name || 'Error'}: ${e?.message || "Failed to create certificate"}`;
+      setError(msg);
+      toast.error(msg);
     } finally {
       setMinting(false);
     }
