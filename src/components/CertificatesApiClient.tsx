@@ -126,7 +126,13 @@ export default function CertificatesApiClient() {
         throw new Error(`Backend creation failed: ${res.status} ${t}`);
       }
 
-      const certData = await res.json();
+      let certData;
+      try {
+        certData = await res.json();
+      } catch (err) {
+        throw new Error("Invalid response from server. Check backend logs.");
+      }
+
       const ipfsCid = certData.ipfs_cid;
       const certId = certData.id;
 
