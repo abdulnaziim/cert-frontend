@@ -71,7 +71,7 @@ export default function AdminIssuedList() {
             setCerts(json?.data || []);
         } catch (e: any) {
             console.error(e);
-            setError(e?.message || "Failed to fetch certificates");
+            setError(`${e?.name || 'Error'}: ${e?.message || "Failed to fetch certificates"} (${backendUrl})`);
         } finally {
             setLoading(false);
         }
