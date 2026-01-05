@@ -22,13 +22,13 @@ export default function Header() {
 
   return (
     <header style={{
-      position: "sticky",
+      position: "fixed",
       top: 0,
+      left: 0,
+      right: 0,
       zIndex: 100,
-      background: "rgba(10, 10, 15, 0.8)",
-      backdropFilter: "blur(20px)",
-      WebkitBackdropFilter: "blur(20px)",
-      borderBottom: "1px solid rgba(255,255,255,0.06)"
+      background: "transparent",
+      borderBottom: "1px solid rgba(255,255,255,0.04)"
     }}>
       <div style={{
         maxWidth: 1400,

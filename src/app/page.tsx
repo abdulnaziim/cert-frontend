@@ -41,11 +41,11 @@ export default function Home() {
             <div
                 ref={heroRef}
                 style={{
-                    minHeight: "calc(100vh - 80px)",
+                    minHeight: "100vh",
                     display: "flex",
                     alignItems: "center",
                     position: "relative",
-                    padding: "40px 24px",
+                    padding: "100px 24px 40px",
                     overflow: "hidden"
                 }}
             >
