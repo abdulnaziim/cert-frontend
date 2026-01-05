@@ -4,7 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useReadContract } from "wagmi";
 import { useSearchParams } from "next/navigation";
 import { CERT_NFT_ABI, getCertNftAddress } from "../../lib/contracts";
-import CertificatePreview from "../../components/CertificatePreview";
+import Link from "next/link";
 
 function VerifyContent() {
     const searchParams = useSearchParams();
@@ -16,7 +16,6 @@ function VerifyContent() {
     const [searching, setSearching] = useState(false);
     const nftAddress = getCertNftAddress();
 
-    // Initialize from URL params
     useEffect(() => {
         const mode = searchParams.get("mode");
         const id = searchParams.get("id");
@@ -31,20 +30,8 @@ function VerifyContent() {
         if (cid) setIpfsCid(cid);
         if (address) setWalletAddress(address);
         if (hash) setTxHash(hash);
-
-        // Auto-search if params exist
-        if (mode && (id || cid || address)) {
-            // We need to wait for state to update or just trigger it manually. 
-            // Since state updates are async, let's just use the values directly for a dedicated init effect
-            // or rely on the user to click (safer to avoid loops). 
-            // Actually, let's set a flag to auto-trigger? 
-            // For simplicity, let's just pre-fill. The user can click Search.
-            // OR: we can auto-trigger in a separate effect that depends on searching=false and params present?
-            // Let's just pre-fill to verify intention for now.
-        }
     }, [searchParams]);
 
-    // Read token URI (only for token mode)
     const { data: tokenURI, isLoading: loadingURI } = useReadContract({
         abi: CERT_NFT_ABI,
         address: nftAddress,
@@ -55,7 +42,6 @@ function VerifyContent() {
         },
     });
 
-    // Read owner (only for token mode)
     const { data: owner, isLoading: loadingOwner } = useReadContract({
         abi: CERT_NFT_ABI,
         address: nftAddress,
@@ -66,7 +52,6 @@ function VerifyContent() {
         },
     });
 
-    // Read revocation status (only for token mode)
     const { data: isRevoked, isLoading: loadingRevoked } = useReadContract({
         abi: CERT_NFT_ABI,
         address: nftAddress,
@@ -125,10 +110,7 @@ function VerifyContent() {
             try {
                 const response = await fetch(`${backendUrl}/api/wallet/${walletAddress}/certificates`, {
                     cache: 'no-store',
-                    headers: {
-                        'Pragma': 'no-cache',
-                        'Cache-Control': 'no-cache'
-                    }
+                    headers: { 'Pragma': 'no-cache', 'Cache-Control': 'no-cache' }
                 });
                 if (response.ok) {
                     const data = await response.json();
@@ -150,10 +132,8 @@ function VerifyContent() {
                 if (response.ok) {
                     const data = await response.json();
                     setTxnData(data);
-                    if (data.certificate) {
-                        if (data.certificate.token_id) {
-                            setTokenId(data.certificate.token_id.toString());
-                        }
+                    if (data.certificate?.token_id) {
+                        setTokenId(data.certificate.token_id.toString());
                     }
                 } else {
                     setMetadataError("Transaction verification failed");
@@ -173,115 +153,181 @@ function VerifyContent() {
 
     const isLoading = loadingURI || loadingOwner || loadingRevoked || searching;
 
-    return (
-        <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)", padding: "40px 24px" }}>
-            <div style={{ maxWidth: 800, margin: "0 auto" }}>
-                <h1 style={{ fontSize: 36, fontWeight: 800, color: "white", textAlign: "center", marginBottom: 8 }}>
-                    🔍 Certificate Portal
-                </h1>
-                <p style={{ color: "rgba(255,255,255,0.9)", textAlign: "center", marginBottom: 32 }}>
-                    Verify authenticity via Blockchain Token ID or IPFS Code
-                </p>
+    const modes = [
+        { id: "token", label: "Token ID", icon: "🔢", placeholder: "e.g. 42" },
+        { id: "ipfs", label: "IPFS Hash", icon: "📁", placeholder: "Qm..." },
+        { id: "wallet", label: "Wallet", icon: "👛", placeholder: "0x..." },
+        { id: "txn", label: "Transaction", icon: "🔗", placeholder: "0x..." }
+    ];
 
-                {/* Mode Toggle */}
-                <div style={{ display: "flex", justifyContent: "center", marginBottom: 24, gap: 12, flexWrap: "wrap" }}>
-                    {[
-                        { id: "token", label: "By Token ID" },
-                        { id: "ipfs", label: "By IPFS Code" },
-                        { id: "wallet", label: "By Wallet Address" },
-                        { id: "txn", label: "By Transaction Hash" }
-                    ].map(mode => (
+    return (
+        <div className="gradient-bg" style={{ minHeight: "100vh", padding: "0 24px 60px" }}>
+            {/* Header */}
+            <header style={{
+                padding: "20px 0",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                maxWidth: 1200,
+                margin: "0 auto"
+            }}>
+                <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 12 }}>
+                    <div style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: 12,
+                        background: "linear-gradient(135deg, #6366f1 0%, #22d3ee 100%)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: 20
+                    }}>
+                        🎓
+                    </div>
+                    <span style={{
+                        fontSize: 20,
+                        fontWeight: 800,
+                        color: "white"
+                    }}>
+                        CertNFT
+                    </span>
+                </Link>
+                <Link href="/" className="btn-secondary" style={{ padding: "10px 20px", fontSize: 14 }}>
+                    ← Back to Home
+                </Link>
+            </header>
+
+            {/* Hero */}
+            <div style={{ textAlign: "center", padding: "60px 0 50px", position: "relative", zIndex: 1 }}>
+                <div className="chip" style={{ marginBottom: 24 }}>
+                    <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#22d3ee" }} />
+                    Blockchain Verification Portal
+                </div>
+                <h1 style={{
+                    fontSize: "clamp(32px, 5vw, 52px)",
+                    fontWeight: 800,
+                    color: "white",
+                    marginBottom: 16,
+                    letterSpacing: "-0.03em"
+                }}>
+                    Verify Any <span className="text-gradient">Certificate</span>
+                </h1>
+                <p style={{
+                    fontSize: 18,
+                    color: "rgba(255,255,255,0.6)",
+                    maxWidth: 500,
+                    margin: "0 auto"
+                }}>
+                    Instantly authenticate credentials using blockchain technology
+                </p>
+            </div>
+
+            {/* Search Section */}
+            <div style={{ maxWidth: 700, margin: "0 auto", position: "relative", zIndex: 1 }}>
+                {/* Mode Selector */}
+                <div style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(4, 1fr)",
+                    gap: 8,
+                    marginBottom: 24
+                }}>
+                    {modes.map(mode => (
                         <button
                             key={mode.id}
-                            onClick={() => { setSearchMode(mode.id as any); setMetadata(null); setWalletData(null); setTxnData(null); }}
+                            onClick={() => { setSearchMode(mode.id as any); setMetadata(null); setWalletData(null); setTxnData(null); setMetadataError(""); }}
                             style={{
-                                padding: "10px 24px",
-                                borderRadius: "30px",
-                                border: "none",
-                                background: searchMode === mode.id ? "white" : "rgba(255,255,255,0.2)",
-                                color: searchMode === mode.id ? "#667eea" : "white",
-                                fontWeight: 700,
+                                padding: "16px 12px",
+                                borderRadius: 16,
+                                border: searchMode === mode.id ? "2px solid #6366f1" : "1px solid rgba(255,255,255,0.1)",
+                                background: searchMode === mode.id ? "rgba(99, 102, 241, 0.15)" : "rgba(255,255,255,0.03)",
+                                color: searchMode === mode.id ? "#818cf8" : "rgba(255,255,255,0.6)",
+                                fontWeight: 600,
                                 cursor: "pointer",
                                 transition: "all 0.2s",
-                                fontSize: 14
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "center",
+                                gap: 6,
+                                fontSize: 13
                             }}
                         >
+                            <span style={{ fontSize: 20 }}>{mode.icon}</span>
                             {mode.label}
                         </button>
                     ))}
                 </div>
 
-                {/* Search Box */}
-                <div style={{ background: "white", borderRadius: 20, padding: 32, boxShadow: "0 20px 60px rgba(0,0,0,0.3)", marginBottom: 32 }}>
-                    <label style={{ display: "block", fontSize: 14, fontWeight: 700, marginBottom: 12, color: "#4b5563" }}>
-                        {searchMode === "token" ? "NFT Token ID" : searchMode === "ipfs" ? "IPFS Content ID (CID)" : searchMode === "wallet" ? "Wallet Public Address" : "Ethereum Transaction Hash"}
-                    </label>
-                    <div style={{ display: "flex", gap: 16, flexDirection: searchMode === "wallet" ? "column" : "row" }}>
+                {/* Search Input */}
+                <div className="glass-card" style={{ padding: 24 }}>
+                    <div style={{ display: "flex", gap: 12 }}>
                         <input
                             id="search-input"
                             type={searchMode === "token" ? "number" : "text"}
                             value={searchMode === "token" ? tokenId : searchMode === "ipfs" ? ipfsCid : searchMode === "wallet" ? walletAddress : txHash}
                             onChange={(e) => {
                                 let val = e.target.value.trim();
-                                // Auto-extract hash from URL if pasted
                                 if (val.includes("etherscan.io/tx/")) {
                                     const parts = val.split("tx/");
                                     if (parts[1]) val = parts[1].split("?")[0].split("/")[0];
                                 }
-
                                 if (searchMode === "token") setTokenId(val);
                                 else if (searchMode === "ipfs") setIpfsCid(val);
                                 else if (searchMode === "wallet") setWalletAddress(val);
                                 else setTxHash(val);
                             }}
-                            placeholder={searchMode === "token" ? "e.g. 4" : searchMode === "ipfs" ? "e.g. Qm..." : searchMode === "wallet" ? "0x..." : "0x..."}
-                            style={{ flex: 1, padding: "16px 20px", border: "2px solid #f3f4f6", borderRadius: 16, fontSize: 16, outline: "none", background: "#f9fafb" }}
+                            placeholder={modes.find(m => m.id === searchMode)?.placeholder}
+                            className="input-modern"
+                            style={{ flex: 1, background: "rgba(255,255,255,0.05)" }}
                             onKeyPress={(e) => e.key === "Enter" && handleVerify()}
                         />
                         <button
                             id="search-btn"
                             onClick={handleVerify}
                             disabled={isLoading}
+                            className="btn-primary"
                             style={{
-                                padding: "16px 40px",
-                                background: "linear-gradient(135deg, #4f46e5 0%, #764ba2 100%)",
-                                color: "white",
-                                border: "none",
-                                borderRadius: 16,
-                                fontSize: 16,
-                                fontWeight: 700,
-                                cursor: "pointer",
+                                padding: "18px 32px",
                                 opacity: isLoading ? 0.7 : 1,
-                                whiteSpace: "nowrap"
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 8
                             }}
                         >
-                            {isLoading ? "Searching..." : "Search"}
+                            {isLoading ? (
+                                <span className="shimmer" style={{ width: 80 }}>Searching...</span>
+                            ) : (
+                                <>
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                        <circle cx="11" cy="11" r="8" />
+                                        <path d="m21 21-4.35-4.35" />
+                                    </svg>
+                                    Verify
+                                </>
+                            )}
                         </button>
                     </div>
                 </div>
 
-                {/* Results Section */}
+                {/* Results */}
                 {(metadata || metadataError || walletData || txnData || (searchMode === "token" && owner)) && (
-                    <div style={{ background: "white", borderRadius: 20, padding: 32, boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
+                    <div className="glass-card" style={{ marginTop: 24, padding: 32 }}>
 
                         {/* Transaction Result */}
                         {searchMode === "txn" && txnData && (
                             <div style={{ textAlign: 'center' }}>
-                                <div style={{
-                                    padding: 16, borderRadius: 16, marginBottom: 24,
-                                    background: txnData.verified ? "linear-gradient(135deg, #10b981 0%, #059669 100%)" : "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
-                                    color: "white", fontSize: 18, fontWeight: 800,
-                                }}>
-                                    {txnData.verified ? "✅ TRANSACTION VALID" : "❌ TRANSACTION INVALID"}
-                                </div>
-
+                                <StatusBadge
+                                    status={txnData.verified ? "success" : "error"}
+                                    text={txnData.verified ? "TRANSACTION VERIFIED" : "TRANSACTION INVALID"}
+                                />
                                 {txnData.certificate && (
-                                    <div style={{ padding: 24, background: "#f9fafb", borderRadius: 16, border: "1px solid #e5e7eb", marginTop: 24 }}>
-                                        <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 8 }}>Certificate Found</h3>
-                                        <p style={{ color: "#4b5563", marginBottom: 16 }}>This transaction issued <strong>Token #{txnData.certificate.token_id}</strong></p>
+                                    <div style={{ marginTop: 24 }}>
+                                        <p style={{ color: "rgba(255,255,255,0.7)", marginBottom: 16 }}>
+                                            This transaction issued <strong style={{ color: "#22d3ee" }}>Token #{txnData.certificate.token_id}</strong>
+                                        </p>
                                         <button
                                             onClick={() => selectCertificate(txnData.certificate.token_id)}
-                                            style={{ padding: "10px 24px", background: "#4f46e5", color: "white", border: "none", borderRadius: 12, fontWeight: 700, cursor: "pointer" }}
+                                            className="btn-primary"
+                                            style={{ padding: "12px 28px" }}
                                         >
                                             View Certificate Details
                                         </button>
@@ -290,161 +336,191 @@ function VerifyContent() {
                             </div>
                         )}
 
-                        {/* Blockchain Status (Token Mode) */}
+                        {/* Token Mode Status */}
                         {searchMode === "token" && isRevoked !== undefined && owner && (
-                            <div style={{
-                                padding: 16, borderRadius: 16, marginBottom: 24,
-                                background: isRevoked ? "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)" : "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-                                color: "white", textAlign: "center", fontSize: 18, fontWeight: 800,
-                            }}>
-                                {isRevoked ? "⚠️ CERTIFICATE REVOKED" : "✅ BLOCKCHAIN VERIFIED"}
-                            </div>
+                            <StatusBadge
+                                status={isRevoked ? "error" : "success"}
+                                text={isRevoked ? "CERTIFICATE REVOKED" : "BLOCKCHAIN VERIFIED"}
+                            />
                         )}
 
-                        {/* Wallet List Results */}
+                        {/* Wallet Results */}
                         {searchMode === "wallet" && walletData && (
                             <div>
-                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24, paddingBottom: 16, borderBottom: "2px solid #f3f4f6" }}>
-                                    <h2 style={{ fontSize: 22, fontWeight: 800 }}>Found Certificates</h2>
-                                    <span style={{ padding: "4px 12px", background: "#eef2ff", color: "#4f46e5", borderRadius: 20, fontSize: 14, fontWeight: 700 }}>
-                                        {walletData.count} Items
-                                    </span>
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+                                    <h2 style={{ fontSize: 20, fontWeight: 700, color: "white" }}>Certificates Found</h2>
+                                    <span className="chip">{walletData.count} Items</span>
                                 </div>
-
                                 {walletData.certificates.length > 0 ? (
-                                    <div style={{ display: "grid", gap: 16 }}>
+                                    <div style={{ display: "grid", gap: 12 }}>
                                         {walletData.certificates.map((cert: any, idx: number) => (
                                             <div
                                                 key={idx}
                                                 onClick={() => selectCertificate(cert.token_id)}
+                                                className="glass-card-light"
                                                 style={{
-                                                    padding: 20, background: "#f9fafb", borderRadius: 16, border: "1px solid #e5e7eb",
-                                                    cursor: "pointer", transition: "all 0.2s",
-                                                    display: "flex", justifyContent: "space-between", alignItems: "center"
+                                                    padding: 20,
+                                                    cursor: "pointer",
+                                                    display: "flex",
+                                                    justifyContent: "space-between",
+                                                    alignItems: "center",
+                                                    transition: "all 0.2s"
                                                 }}
                                             >
                                                 <div>
-                                                    <p style={{ fontSize: 12, color: "#6b7280", fontWeight: 700 }}>TOKEN #{cert.token_id}</p>
-                                                    <h4 style={{ fontSize: 18, fontWeight: 700 }}>{cert.metadata?.title || "Certificate"}</h4>
-                                                    <p style={{ fontSize: 14, color: "#4b5563" }}>{cert.metadata?.recipient_name || "Unknown Owner"}</p>
-                                                    {cert.on_chain_data?.hash && (
-                                                        <a
-                                                            href={`https://sepolia.etherscan.io/tx/${cert.on_chain_data.hash}`}
-                                                            target="_blank" rel="noopener noreferrer"
-                                                            onClick={(e) => e.stopPropagation()}
-                                                            style={{ fontSize: 12, color: "#4f46e5", textDecoration: "none", marginTop: 8, display: "inline-block" }}
-                                                        >
-                                                            🔗 View Mint Transaction
-                                                        </a>
-                                                    )}
+                                                    <div style={{ fontSize: 11, color: "#22d3ee", fontWeight: 700, marginBottom: 4 }}>
+                                                        TOKEN #{cert.token_id}
+                                                    </div>
+                                                    <div style={{ fontSize: 16, fontWeight: 700, color: "white" }}>
+                                                        {cert.metadata?.title || "Certificate"}
+                                                    </div>
+                                                    <div style={{ fontSize: 13, color: "rgba(255,255,255,0.5)" }}>
+                                                        {cert.metadata?.recipient_name || "Unknown"}
+                                                    </div>
                                                 </div>
-                                                <div style={{ textAlign: "right", color: "#4f46e5", fontWeight: 700 }}>View Details →</div>
+                                                <div style={{ color: "#818cf8", fontWeight: 600, fontSize: 14 }}>
+                                                    View →
+                                                </div>
                                             </div>
                                         ))}
                                     </div>
                                 ) : (
-                                    <div style={{ textAlign: "center", padding: "40px 0", color: "#6b7280" }}>No certificates found for this wallet on Sepolia.</div>
+                                    <div style={{ textAlign: "center", padding: 40, color: "rgba(255,255,255,0.5)" }}>
+                                        No certificates found for this wallet
+                                    </div>
                                 )}
                             </div>
                         )}
 
-                        {/* IPFS Status (IPFS Mode) */}
+                        {/* IPFS Status */}
                         {searchMode === "ipfs" && metadata && (
-                            <div style={{
-                                padding: 16, borderRadius: 16, marginBottom: 24,
-                                background: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
-                                color: "white", textAlign: "center", fontSize: 18, fontWeight: 800,
-                            }}>
-                                📁 IPFS DATA RETRIEVED
-                            </div>
+                            <StatusBadge status="info" text="IPFS DATA RETRIEVED" />
                         )}
 
-                        {/* Owner Info (Token Mode) */}
+                        {/* Owner Info */}
                         {searchMode === "token" && owner && (
-                            <div style={{ marginBottom: 24 }}>
-                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
-                                    <h3 style={{ fontSize: 12, fontWeight: 800, color: "#9ca3af", textTransform: "uppercase" }}>On-chain Owner</h3>
+                            <div style={{ marginBottom: 24, marginTop: 24 }}>
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                                    <span style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", fontWeight: 700 }}>
+                                        On-Chain Owner
+                                    </span>
                                     <a
                                         href={`https://sepolia.etherscan.io/address/${owner as string}`}
-                                        target="_blank" rel="noopener noreferrer"
-                                        style={{ fontSize: 12, color: "#4f46e5", textDecoration: "none", fontWeight: 700 }}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        style={{ fontSize: 12, color: "#22d3ee", textDecoration: "none" }}
                                     >
-                                        Verify on Etherscan ↗
+                                        Etherscan ↗
                                     </a>
                                 </div>
-                                <div style={{ padding: 12, background: "#f9fafb", borderRadius: 12, fontFamily: "monospace", fontSize: 14, wordBreak: "break-all", border: "1px solid #e5e7eb" }}>
+                                <div style={{
+                                    padding: 14,
+                                    background: "rgba(255,255,255,0.03)",
+                                    borderRadius: 12,
+                                    fontFamily: "monospace",
+                                    fontSize: 13,
+                                    color: "rgba(255,255,255,0.8)",
+                                    wordBreak: "break-all",
+                                    border: "1px solid rgba(255,255,255,0.06)"
+                                }}>
                                     {owner as string}
                                 </div>
                             </div>
                         )}
 
-                        {/* Metadata Details */}
+                        {/* Metadata Display */}
                         {metadata && (
-                            <div>
-                                <div style={{ marginBottom: 24, borderBottom: "1px solid #f3f4f6", paddingBottom: 16 }}>
-                                    <h2 style={{ fontSize: 26, fontWeight: 800, color: "#111827", marginBottom: 4 }}>{metadata.name || metadata.title || "Certificate"}</h2>
-                                    <p style={{ color: "#4b5563" }}>Issued to: <span style={{ fontWeight: 800, color: "#111827" }}>{metadata.recipient_name}</span></p>
+                            <div style={{ marginTop: 24 }}>
+                                <div style={{ marginBottom: 24, paddingBottom: 20, borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+                                    <h2 style={{ fontSize: 24, fontWeight: 800, color: "white", marginBottom: 8 }}>
+                                        {metadata.name || metadata.title || "Certificate"}
+                                    </h2>
+                                    <p style={{ color: "rgba(255,255,255,0.6)" }}>
+                                        Issued to: <strong style={{ color: "white" }}>{metadata.recipient_name}</strong>
+                                    </p>
                                 </div>
 
+                                {/* IPFS Source */}
                                 <div style={{ marginBottom: 24 }}>
-                                    <h3 style={{ fontSize: 12, fontWeight: 800, color: "#9ca3af", marginBottom: 8, textTransform: "uppercase" }}>IPFS Source</h3>
-                                    <div style={{ padding: 12, background: "#f9fafb", borderRadius: 12, fontFamily: "monospace", fontSize: 12, wordBreak: "break-all", color: "#3b82f6", border: "1px solid #e5e7eb" }}>
+                                    <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", marginBottom: 8, fontWeight: 700, textTransform: "uppercase" }}>
+                                        IPFS Source
+                                    </div>
+                                    <div style={{
+                                        padding: 12,
+                                        background: "rgba(255,255,255,0.03)",
+                                        borderRadius: 10,
+                                        fontFamily: "monospace",
+                                        fontSize: 12,
+                                        color: "#22d3ee",
+                                        wordBreak: "break-all",
+                                        border: "1px solid rgba(255,255,255,0.06)"
+                                    }}>
                                         {searchMode === "token" ? (tokenURI as string) : (ipfsCid.startsWith("ipfs://") ? ipfsCid : `ipfs://${ipfsCid}`)}
                                     </div>
                                 </div>
 
-                                <div style={{ marginTop: 24 }}>
-                                    {((metadata.image && metadata.image.includes('pdf')) ||
-                                        (metadata.properties?.files?.[0]?.type === 'application/pdf')) ? (
-                                        <div style={{ textAlign: 'center' }}>
-                                            <div style={{ marginBottom: 24, borderRadius: 12, overflow: 'hidden', boxShadow: "0 10px 40px rgba(0,0,0,0.2)", border: "1px solid #e5e7eb" }}>
-                                                <iframe
-                                                    src={metadata.image.replace("ipfs://", "https://gateway.pinata.cloud/ipfs/")}
-                                                    width="100%"
-                                                    height="600px"
-                                                    style={{ border: "none", display: "block" }}
-                                                    title="Certificate PDF"
-                                                />
-                                            </div>
-                                            <a
-                                                href={metadata.image.replace("ipfs://", "https://gateway.pinata.cloud/ipfs/")}
-                                                target="_blank" rel="noopener noreferrer"
-                                                style={{ display: "inline-block", padding: "14px 32px", background: "linear-gradient(135deg, #10b981 0%, #059669 100%)", color: "white", borderRadius: 12, textDecoration: "none", fontWeight: 800 }}
-                                            >
-                                                📄 Download PDF Certificate
-                                            </a>
-                                        </div>
-                                    ) : metadata.image ? (
-                                        <div style={{ textAlign: 'center' }}>
-                                            <img
+                                {/* Certificate Preview */}
+                                {((metadata.image && metadata.image.includes('pdf')) ||
+                                    (metadata.properties?.files?.[0]?.type === 'application/pdf')) ? (
+                                    <div style={{ textAlign: 'center' }}>
+                                        <div style={{ borderRadius: 16, overflow: 'hidden', marginBottom: 20, border: "1px solid rgba(255,255,255,0.1)" }}>
+                                            <iframe
                                                 src={metadata.image.replace("ipfs://", "https://gateway.pinata.cloud/ipfs/")}
-                                                alt="Certificate"
-                                                style={{ maxWidth: "100%", borderRadius: 12, boxShadow: "0 10px 40px rgba(0,0,0,0.2)", marginBottom: 16 }}
+                                                width="100%"
+                                                height="500px"
+                                                style={{ border: "none", display: "block", background: "white" }}
+                                                title="Certificate PDF"
                                             />
-                                            <a
-                                                href={metadata.image.replace("ipfs://", "https://gateway.pinata.cloud/ipfs/")}
-                                                target="_blank" rel="noopener noreferrer"
-                                                style={{ display: "inline-block", padding: "10px 28px", background: "#f3f4f6", color: "#374151", borderRadius: 12, textDecoration: "none", fontWeight: 700, border: "1px solid #d1d5db" }}
-                                            >
-                                                ⬇️ Download Image
-                                            </a>
                                         </div>
-                                    ) : (
-                                        <CertificatePreview metadata={metadata} tokenId={searchMode === "token" ? tokenId : "Portal"} />
-                                    )}
-                                </div>
+                                        <a
+                                            href={metadata.image.replace("ipfs://", "https://gateway.pinata.cloud/ipfs/")}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="btn-primary"
+                                            style={{ display: "inline-flex", alignItems: "center", gap: 8, textDecoration: "none" }}
+                                        >
+                                            📄 Download PDF
+                                        </a>
+                                    </div>
+                                ) : metadata.image ? (
+                                    <div style={{ textAlign: 'center' }}>
+                                        <img
+                                            src={metadata.image.replace("ipfs://", "https://gateway.pinata.cloud/ipfs/")}
+                                            alt="Certificate"
+                                            style={{ maxWidth: "100%", borderRadius: 16, marginBottom: 20, border: "1px solid rgba(255,255,255,0.1)" }}
+                                        />
+                                    </div>
+                                ) : (
+                                    <CertificateCard metadata={metadata} tokenId={searchMode === "token" ? tokenId : "Portal"} />
+                                )}
                             </div>
                         )}
 
+                        {/* Error Display */}
                         {metadataError && (
-                            <div style={{ padding: 16, background: "#fee2e2", borderRadius: 8, color: "#991b1b", textAlign: "center", marginTop: 24 }}>
+                            <div style={{
+                                padding: 16,
+                                background: "rgba(239, 68, 68, 0.1)",
+                                border: "1px solid rgba(239, 68, 68, 0.3)",
+                                borderRadius: 12,
+                                color: "#f87171",
+                                textAlign: "center",
+                                marginTop: 16
+                            }}>
                                 {metadataError}
                             </div>
                         )}
 
                         {searchMode === "token" && !owner && !isLoading && tokenId && (
-                            <div style={{ padding: 16, background: "#fee2e2", borderRadius: 8, color: "#991b1b", textAlign: "center", marginTop: 24 }}>
-                                Token ID #{tokenId} does not exist on the Sepolia blockchain.
+                            <div style={{
+                                padding: 16,
+                                background: "rgba(239, 68, 68, 0.1)",
+                                border: "1px solid rgba(239, 68, 68, 0.3)",
+                                borderRadius: 12,
+                                color: "#f87171",
+                                textAlign: "center"
+                            }}>
+                                Token #{tokenId} does not exist on the blockchain
                             </div>
                         )}
                     </div>
@@ -454,9 +530,76 @@ function VerifyContent() {
     );
 }
 
+function StatusBadge({ status, text }: { status: "success" | "error" | "info"; text: string }) {
+    const colors = {
+        success: { bg: "rgba(34, 197, 94, 0.15)", border: "rgba(34, 197, 94, 0.4)", color: "#4ade80", icon: "✓" },
+        error: { bg: "rgba(239, 68, 68, 0.15)", border: "rgba(239, 68, 68, 0.4)", color: "#f87171", icon: "✕" },
+        info: { bg: "rgba(34, 211, 238, 0.15)", border: "rgba(34, 211, 238, 0.4)", color: "#22d3ee", icon: "ℹ" }
+    };
+    const c = colors[status];
+
+    return (
+        <div style={{
+            padding: "16px 24px",
+            background: c.bg,
+            border: `1px solid ${c.border}`,
+            borderRadius: 16,
+            color: c.color,
+            textAlign: "center",
+            fontSize: 14,
+            fontWeight: 700,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 10
+        }}>
+            <span style={{ fontSize: 18 }}>{c.icon}</span>
+            {text}
+        </div>
+    );
+}
+
+function CertificateCard({ metadata, tokenId }: { metadata: any; tokenId: string }) {
+    return (
+        <div className="glass-card-light" style={{ padding: 32, textAlign: "center" }}>
+            <div style={{
+                width: 80,
+                height: 80,
+                borderRadius: 20,
+                background: "linear-gradient(135deg, #6366f1 0%, #22d3ee 100%)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 40,
+                margin: "0 auto 24px"
+            }}>
+                🎓
+            </div>
+            <h3 style={{ fontSize: 22, fontWeight: 800, color: "white", marginBottom: 8 }}>
+                {metadata.title || metadata.name || "Certificate"}
+            </h3>
+            <p style={{ color: "rgba(255,255,255,0.7)", marginBottom: 16 }}>
+                Awarded to <strong>{metadata.recipient_name}</strong>
+            </p>
+            <div className="chip" style={{ marginBottom: 16 }}>
+                Token #{tokenId}
+            </div>
+            {metadata.description && (
+                <p style={{ fontSize: 14, color: "rgba(255,255,255,0.5)", lineHeight: 1.6 }}>
+                    {metadata.description}
+                </p>
+            )}
+        </div>
+    );
+}
+
 export default function VerifyPage() {
     return (
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={
+            <div className="gradient-bg" style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <div className="shimmer" style={{ fontSize: 18, color: "white" }}>Loading...</div>
+            </div>
+        }>
             <VerifyContent />
         </Suspense>
     );
