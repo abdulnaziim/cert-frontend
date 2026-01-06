@@ -80,15 +80,15 @@ export default function CertificateCard({ cert }: CertificateCardProps) {
         }
     }
     return (
-        <Card variant="outlined" sx={{ '&:hover': { borderColor: 'primary.main', bgcolor: '#f8fafc', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }, transition: 'all 0.2s', borderRadius: 3 }}>
+        <Card variant="outlined" sx={{ '&:hover': { borderColor: 'primary.main', bgcolor: 'rgba(255,255,255,0.02)', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }, transition: 'all 0.2s', borderRadius: 3 }}>
             <CardContent>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
                     <Box>
-                        <Typography variant="h6" fontWeight="800" color="text.primary">
+                        <Typography variant="h6" fontWeight="800" color="text.primary" sx={{ mb: 0.5 }}>
                             {cert.title}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
-                            Issued to <b>{cert.recipient_name}</b> ({cert.recipient_email})
+                            Issued to <b style={{ color: '#e2e8f0' }}>{cert.recipient_name}</b> <span style={{ opacity: 0.7 }}>({cert.recipient_email})</span>
                         </Typography>
                     </Box>
                     <Stack direction="row" spacing={1}>
@@ -121,30 +121,30 @@ export default function CertificateCard({ cert }: CertificateCardProps) {
                 </Box>
 
                 {cert.transaction_hash ? (
-                    <Box sx={{ mt: 1, p: 1.5, bgcolor: '#f8fafb', borderRadius: 2, fontFamily: 'monospace', fontSize: 12, border: '1px solid #eef2f6', display: 'flex', flexDirection: 'column' }}>
-                        <span style={{ color: '#94a3b8', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', marginBottom: 2 }}>Blockchain Evidence</span>
+                    <Box sx={{ mt: 1, p: 2, bgcolor: 'rgba(255,255,255,0.03)', borderRadius: 2, fontFamily: 'monospace', fontSize: 13, border: '1px solid rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column' }}>
+                        <span style={{ color: '#94a3b8', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>Blockchain Evidence</span>
                         <a
                             href={`https://sepolia.etherscan.io/tx/${cert.transaction_hash}`}
                             target="_blank" rel="noopener noreferrer"
-                            style={{ color: '#3b82f6', wordBreak: 'break-all', textDecoration: 'none' }}
+                            style={{ color: '#60a5fa', wordBreak: 'break-all', textDecoration: 'none' }}
                         >
                             {cert.transaction_hash} ↗
                         </a>
                     </Box>
                 ) : (cert.token_id || cert.on_chain_id) ? (
-                    <Box sx={{ mt: 1, p: 1.5, bgcolor: '#f0fdf4', borderRadius: 2, fontFamily: 'monospace', fontSize: 12, border: '1px solid #bbf7d0', display: 'flex', flexDirection: 'column' }}>
-                        <span style={{ color: '#166534', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', marginBottom: 2 }}>Blockchain Verified</span>
+                    <Box sx={{ mt: 1, p: 2, bgcolor: 'rgba(34, 197, 94, 0.1)', borderRadius: 2, fontFamily: 'monospace', fontSize: 13, border: '1px solid rgba(34, 197, 94, 0.2)', display: 'flex', flexDirection: 'column' }}>
+                        <span style={{ color: '#4ade80', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>Blockchain Verified</span>
                         <a
                             href={`https://sepolia.etherscan.io/nft/${process.env.NEXT_PUBLIC_CERTNFT_ADDRESS}/${cert.token_id || cert.on_chain_id}`}
                             target="_blank" rel="noopener noreferrer"
-                            style={{ color: '#15803d', wordBreak: 'break-all', textDecoration: 'none', fontWeight: 600 }}
+                            style={{ color: '#4ade80', wordBreak: 'break-all', textDecoration: 'none', fontWeight: 600 }}
                         >
                             View NFT on Etherscan ↗
                         </a>
                     </Box>
                 ) : (
-                    <Box sx={{ mt: 1, p: 1.5, bgcolor: '#fff7ed', borderRadius: 2, border: '1px dashed #fdba74', display: 'flex', flexDirection: 'column', gap: 1 }}>
-                        <Typography variant="caption" color="warning.dark" sx={{ fontWeight: 600 }}>
+                    <Box sx={{ mt: 1, p: 2, bgcolor: 'rgba(234, 179, 8, 0.1)', borderRadius: 2, border: '1px dashed rgba(234, 179, 8, 0.3)', display: 'flex', flexDirection: 'column', gap: 1 }}>
+                        <Typography variant="caption" sx={{ fontWeight: 600, color: '#facc15' }}>
                             ⚠️ This certificate hasn't been anchored to the blockchain yet. Please re-issue or wait for sync.
                         </Typography>
                         {address && (
@@ -170,7 +170,7 @@ export default function CertificateCard({ cert }: CertificateCardProps) {
                             href={cert.ipfs_url || `https://gateway.pinata.cloud/ipfs/${cert.ipfs_cid}`}
                             target="_blank"
                             startIcon={<OpenInNewIcon />}
-                            sx={{ borderRadius: 1.5, textTransform: 'none', fontWeight: 600 }}
+                            sx={{ borderRadius: 1.5, textTransform: 'none', fontWeight: 600, color: '#94a3b8', borderColor: 'rgba(255,255,255,0.2)' }}
                         >
                             Verify IPFS Data
                         </Button>
