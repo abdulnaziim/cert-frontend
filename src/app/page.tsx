@@ -84,7 +84,7 @@ export default function Home() {
                         display: "flex",
                         flexDirection: "column",
                         alignItems: "center",
-                        gap: 24
+                        minHeight: 320
                     }}>
                         <div style={{
                             width: 56,
@@ -95,30 +95,31 @@ export default function Home() {
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
-                            fontSize: 24
+                            fontSize: 24,
+                            marginBottom: 20
                         }}>
                             👤
                         </div>
-                        <div>
-                            <h3 style={{
-                                fontSize: 20,
-                                fontWeight: 700,
-                                color: "white",
-                                marginBottom: 8
-                            }}>
-                                Issuers & Students
-                            </h3>
-                            <p style={{
-                                fontSize: 14,
-                                color: "rgba(255,255,255,0.5)",
-                                marginBottom: 24
-                            }}>
-                                Connect your wallet to access your dashboard
-                            </p>
-                        </div>
+                        <h3 style={{
+                            fontSize: 20,
+                            fontWeight: 700,
+                            color: "white",
+                            marginBottom: 8,
+                            textAlign: "center"
+                        }}>
+                            Issuers & Students
+                        </h3>
+                        <p style={{
+                            fontSize: 14,
+                            color: "rgba(255,255,255,0.5)",
+                            textAlign: "center",
+                            flex: 1
+                        }}>
+                            Connect your wallet to access your dashboard
+                        </p>
 
                         {isConnected ? (
-                            <Link href={isAdmin ? "/admin" : "/student"} style={{ width: "100%" }}>
+                            <Link href={isAdmin ? "/admin" : "/student"} style={{ width: "100%", marginTop: 24 }}>
                                 <button style={{
                                     width: "100%",
                                     height: 52,
@@ -142,7 +143,7 @@ export default function Home() {
                                 </button>
                             </Link>
                         ) : (
-                            <div style={{ width: "100%" }}>
+                            <div style={{ width: "100%", marginTop: 24 }}>
                                 <ConnectButton.Custom>
                                     {({ openConnectModal }) => (
                                         <button
@@ -182,7 +183,7 @@ export default function Home() {
                         display: "flex",
                         flexDirection: "column",
                         alignItems: "center",
-                        gap: 24
+                        minHeight: 320
                     }}>
                         <div style={{
                             width: 56,
@@ -193,29 +194,30 @@ export default function Home() {
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
-                            fontSize: 24
+                            fontSize: 24,
+                            marginBottom: 20
                         }}>
                             ✓
                         </div>
-                        <div>
-                            <h3 style={{
-                                fontSize: 20,
-                                fontWeight: 700,
-                                color: "white",
-                                marginBottom: 8
-                            }}>
-                                Verifiers
-                            </h3>
-                            <p style={{
-                                fontSize: 14,
-                                color: "rgba(255,255,255,0.5)",
-                                marginBottom: 24
-                            }}>
-                                Verify the authenticity of any certificate
-                            </p>
-                        </div>
+                        <h3 style={{
+                            fontSize: 20,
+                            fontWeight: 700,
+                            color: "white",
+                            marginBottom: 8,
+                            textAlign: "center"
+                        }}>
+                            Verifiers
+                        </h3>
+                        <p style={{
+                            fontSize: 14,
+                            color: "rgba(255,255,255,0.5)",
+                            textAlign: "center",
+                            flex: 1
+                        }}>
+                            Verify the authenticity of any certificate
+                        </p>
 
-                        <Link href="/verify" style={{ width: "100%" }}>
+                        <Link href="/verify" style={{ width: "100%", marginTop: 24 }}>
                             <button style={{
                                 width: "100%",
                                 height: 52,
