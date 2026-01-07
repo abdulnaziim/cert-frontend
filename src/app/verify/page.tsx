@@ -169,9 +169,11 @@ function VerifyContent() {
                 justifyContent: "space-between",
                 alignItems: "center",
                 maxWidth: 1200,
-                margin: "0 auto"
+                margin: "0 auto",
+                position: "relative",
+                zIndex: 50
             }}>
-                <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 12 }}>
+                <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }}>
                     <div style={{
                         width: 40,
                         height: 40,
