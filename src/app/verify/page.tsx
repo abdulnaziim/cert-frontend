@@ -192,9 +192,7 @@ function VerifyContent() {
                         CertNFT
                     </span>
                 </Link>
-                <Link href="/" className="btn-secondary" style={{ padding: "10px 20px", fontSize: 14 }}>
-                    ← Back to Home
-                </Link>
+
             </header>
 
             {/* Hero */}
