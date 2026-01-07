@@ -178,7 +178,7 @@ function VerifyContent() {
                         width: 40,
                         height: 40,
                         borderRadius: 12,
-                        background: "linear-gradient(135deg, #6366f1 0%, #22d3ee 100%)",
+                        background: "linear-gradient(135deg, #10b981 0%, #2dd4bf 100%)",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -200,7 +200,7 @@ function VerifyContent() {
             {/* Hero */}
             <div style={{ textAlign: "center", padding: "60px 0 50px", position: "relative", zIndex: 1 }}>
                 <div className="chip" style={{ marginBottom: 24 }}>
-                    <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#22d3ee" }} />
+                    <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#2dd4bf" }} />
                     Blockchain Verification Portal
                 </div>
                 <h1 style={{
@@ -238,9 +238,9 @@ function VerifyContent() {
                             style={{
                                 padding: "16px 12px",
                                 borderRadius: 16,
-                                border: searchMode === mode.id ? "2px solid #6366f1" : "1px solid rgba(255,255,255,0.1)",
-                                background: searchMode === mode.id ? "rgba(99, 102, 241, 0.15)" : "rgba(255,255,255,0.03)",
-                                color: searchMode === mode.id ? "#818cf8" : "rgba(255,255,255,0.6)",
+                                border: searchMode === mode.id ? "2px solid #10b981" : "1px solid rgba(255,255,255,0.1)",
+                                background: searchMode === mode.id ? "rgba(16, 185, 129, 0.15)" : "rgba(255,255,255,0.03)",
+                                color: searchMode === mode.id ? "#34d399" : "rgba(255,255,255,0.6)",
                                 fontWeight: 600,
                                 cursor: "pointer",
                                 transition: "all 0.2s",
@@ -322,7 +322,7 @@ function VerifyContent() {
                                 {txnData.certificate && (
                                     <div style={{ marginTop: 24 }}>
                                         <p style={{ color: "rgba(255,255,255,0.7)", marginBottom: 16 }}>
-                                            This transaction issued <strong style={{ color: "#22d3ee" }}>Token #{txnData.certificate.token_id}</strong>
+                                            This transaction issued <strong style={{ color: "#2dd4bf" }}>Token #{txnData.certificate.token_id}</strong>
                                         </p>
                                         <button
                                             onClick={() => selectCertificate(txnData.certificate.token_id)}
@@ -368,7 +368,7 @@ function VerifyContent() {
                                                 }}
                                             >
                                                 <div>
-                                                    <div style={{ fontSize: 11, color: "#22d3ee", fontWeight: 700, marginBottom: 4 }}>
+                                                    <div style={{ fontSize: 11, color: "#2dd4bf", fontWeight: 700, marginBottom: 4 }}>
                                                         TOKEN #{cert.token_id}
                                                     </div>
                                                     <div style={{ fontSize: 16, fontWeight: 700, color: "white" }}>
@@ -378,7 +378,7 @@ function VerifyContent() {
                                                         {cert.metadata?.recipient_name || "Unknown"}
                                                     </div>
                                                 </div>
-                                                <div style={{ color: "#818cf8", fontWeight: 600, fontSize: 14 }}>
+                                                <div style={{ color: "#34d399", fontWeight: 600, fontSize: 14 }}>
                                                     View →
                                                 </div>
                                             </div>
@@ -408,7 +408,7 @@ function VerifyContent() {
                                         href={`https://sepolia.etherscan.io/address/${owner as string}`}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        style={{ fontSize: 12, color: "#22d3ee", textDecoration: "none" }}
+                                        style={{ fontSize: 12, color: "#2dd4bf", textDecoration: "none" }}
                                     >
                                         Etherscan ↗
                                     </a>
@@ -451,7 +451,7 @@ function VerifyContent() {
                                         borderRadius: 10,
                                         fontFamily: "monospace",
                                         fontSize: 12,
-                                        color: "#22d3ee",
+                                        color: "#2dd4bf",
                                         wordBreak: "break-all",
                                         border: "1px solid rgba(255,255,255,0.06)"
                                     }}>
@@ -534,7 +534,7 @@ function StatusBadge({ status, text }: { status: "success" | "error" | "info"; t
     const colors = {
         success: { bg: "rgba(34, 197, 94, 0.15)", border: "rgba(34, 197, 94, 0.4)", color: "#4ade80", icon: "✓" },
         error: { bg: "rgba(239, 68, 68, 0.15)", border: "rgba(239, 68, 68, 0.4)", color: "#f87171", icon: "✕" },
-        info: { bg: "rgba(34, 211, 238, 0.15)", border: "rgba(34, 211, 238, 0.4)", color: "#22d3ee", icon: "ℹ" }
+        info: { bg: "rgba(45, 212, 191, 0.15)", border: "rgba(45, 212, 191, 0.4)", color: "#2dd4bf", icon: "ℹ" }
     };
     const c = colors[status];
 
@@ -566,7 +566,7 @@ function CertificateCard({ metadata, tokenId }: { metadata: any; tokenId: string
                 width: 80,
                 height: 80,
                 borderRadius: 20,
-                background: "linear-gradient(135deg, #6366f1 0%, #22d3ee 100%)",
+                background: "linear-gradient(135deg, #10b981 0%, #2dd4bf 100%)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",

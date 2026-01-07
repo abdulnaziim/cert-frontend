@@ -38,13 +38,13 @@ export default function Home() {
                     width: 80,
                     height: 80,
                     borderRadius: 24,
-                    background: "linear-gradient(135deg, #6366f1 0%, #22d3ee 100%)",
+                    background: "linear-gradient(135deg, #10b981 0%, #2dd4bf 100%)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     fontSize: 40,
                     marginBottom: 32,
-                    boxShadow: "0 20px 60px rgba(99, 102, 241, 0.4)"
+                    boxShadow: "0 20px 60px rgba(16, 185, 129, 0.4)"
                 }}>
                     🎓
                 </div>
@@ -90,8 +90,8 @@ export default function Home() {
                             width: 56,
                             height: 56,
                             borderRadius: 16,
-                            background: "rgba(99, 102, 241, 0.15)",
-                            border: "1px solid rgba(99, 102, 241, 0.3)",
+                            background: "rgba(16, 185, 129, 0.15)",
+                            border: "1px solid rgba(16, 185, 129, 0.3)",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
@@ -171,8 +171,8 @@ export default function Home() {
                             width: 56,
                             height: 56,
                             borderRadius: 16,
-                            background: "rgba(34, 211, 238, 0.15)",
-                            border: "1px solid rgba(34, 211, 238, 0.3)",
+                            background: "rgba(45, 212, 191, 0.15)",
+                            border: "1px solid rgba(45, 212, 191, 0.3)",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",

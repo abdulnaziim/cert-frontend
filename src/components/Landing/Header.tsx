@@ -44,7 +44,7 @@ export default function Header() {
             width: 40,
             height: 40,
             borderRadius: 12,
-            background: "linear-gradient(135deg, #6366f1 0%, #22d3ee 100%)",
+            background: "linear-gradient(135deg, #10b981 0%, #2dd4bf 100%)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -88,9 +88,9 @@ function NavLink({ href, children, highlight }: { href: string; children: React.
         borderRadius: 10,
         fontSize: 14,
         fontWeight: 600,
-        color: highlight ? "#818cf8" : "rgba(255,255,255,0.7)",
-        background: highlight ? "rgba(99, 102, 241, 0.1)" : "transparent",
-        border: highlight ? "1px solid rgba(99, 102, 241, 0.2)" : "1px solid transparent",
+        color: highlight ? "#34d399" : "rgba(255,255,255,0.7)",
+        background: highlight ? "rgba(16, 185, 129, 0.1)" : "transparent",
+        border: highlight ? "1px solid rgba(16, 185, 129, 0.2)" : "1px solid transparent",
         textDecoration: "none",
         transition: "all 0.2s ease"
       }}
