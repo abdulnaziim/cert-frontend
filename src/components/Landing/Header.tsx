@@ -66,8 +66,7 @@ export default function Header() {
 
         {/* Navigation */}
         <nav style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <NavLink href="/#features">Features</NavLink>
-          <NavLink href="/verify">Verify</NavLink>
+
           {target && <NavLink href={target} highlight>Dashboard</NavLink>}
 
           <div style={{ marginLeft: 16 }}>
