@@ -90,8 +90,8 @@ export default function Home() {
                             width: 56,
                             height: 56,
                             borderRadius: 16,
-                            background: "rgba(16, 185, 129, 0.15)",
-                            border: "1px solid rgba(16, 185, 129, 0.3)",
+                            background: "rgba(59, 130, 246, 0.15)",
+                            border: "1px solid rgba(59, 130, 246, 0.3)",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
@@ -119,12 +119,21 @@ export default function Home() {
 
                         {isConnected ? (
                             <Link href={isAdmin ? "/admin" : "/student"} style={{ width: "100%" }}>
-                                <button className="btn-primary" style={{
+                                <button style={{
                                     width: "100%",
+                                    height: 52,
                                     display: "flex",
                                     alignItems: "center",
                                     justifyContent: "center",
-                                    gap: 10
+                                    gap: 10,
+                                    background: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
+                                    color: "white",
+                                    border: "none",
+                                    borderRadius: 12,
+                                    fontSize: 16,
+                                    fontWeight: 600,
+                                    cursor: "pointer",
+                                    transition: "all 0.2s ease"
                                 }}>
                                     Go to Dashboard
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -138,13 +147,21 @@ export default function Home() {
                                     {({ openConnectModal }) => (
                                         <button
                                             onClick={openConnectModal}
-                                            className="btn-primary"
                                             style={{
                                                 width: "100%",
+                                                height: 52,
                                                 display: "flex",
                                                 alignItems: "center",
                                                 justifyContent: "center",
-                                                gap: 10
+                                                gap: 10,
+                                                background: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
+                                                color: "white",
+                                                border: "none",
+                                                borderRadius: 12,
+                                                fontSize: 16,
+                                                fontWeight: 600,
+                                                cursor: "pointer",
+                                                transition: "all 0.2s ease"
                                             }}
                                         >
                                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -171,8 +188,8 @@ export default function Home() {
                             width: 56,
                             height: 56,
                             borderRadius: 16,
-                            background: "rgba(45, 212, 191, 0.15)",
-                            border: "1px solid rgba(45, 212, 191, 0.3)",
+                            background: "rgba(59, 130, 246, 0.15)",
+                            border: "1px solid rgba(59, 130, 246, 0.3)",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
@@ -199,12 +216,21 @@ export default function Home() {
                         </div>
 
                         <Link href="/verify" style={{ width: "100%" }}>
-                            <button className="btn-secondary" style={{
+                            <button style={{
                                 width: "100%",
+                                height: 52,
                                 display: "flex",
                                 alignItems: "center",
                                 justifyContent: "center",
-                                gap: 10
+                                gap: 10,
+                                background: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
+                                color: "white",
+                                border: "none",
+                                borderRadius: 12,
+                                fontSize: 16,
+                                fontWeight: 600,
+                                cursor: "pointer",
+                                transition: "all 0.2s ease"
                             }}>
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                     <circle cx="11" cy="11" r="8" />
