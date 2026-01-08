@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import { Box, Button, Card, CardContent, Chip, Stack, Typography, CircularProgress } from "@mui/material";
-import { Verified as VerifiedIcon, OpenInNew as OpenInNewIcon, CloudUpload as CloudUploadIcon } from "@mui/icons-material";
+import { Verified as VerifiedIcon, OpenInNew as OpenInNewIcon, CloudUpload as CloudUploadIcon, QrCodeScanner as QrCodeScannerIcon } from "@mui/icons-material";
 import { useAccount, useWriteContract, usePublicClient } from "wagmi";
 import { CERT_NFT_ABI, getCertNftAddress } from "../../lib/contracts";
 import toast from "react-hot-toast";
 import Link from "next/link";
+import QRCodeModal from "./QRCodeModal";
 
 export type Certificate = {
     id: number;
@@ -36,6 +37,7 @@ export default function CertificateCard({ cert }: CertificateCardProps) {
     const { isConnected, address } = useAccount();
     const nftAddress = getCertNftAddress();
     const [minting, setMinting] = useState(false);
+    const [showQR, setShowQR] = useState(false);
 
     async function handleConfirmMint() {
         if (!isConnected) {
@@ -175,20 +177,40 @@ export default function CertificateCard({ cert }: CertificateCardProps) {
                             Verify IPFS Data
                         </Button>
                         {(cert.token_id || cert.on_chain_id) && (
-                            <Button
-                                component={Link}
-                                size="small"
-                                variant="text"
-                                color="primary"
-                                href={`/verify?mode=token&id=${cert.token_id || cert.on_chain_id}`}
-                                sx={{ fontWeight: 600 }}
-                            >
-                                Verify Publicly
-                            </Button>
+                            <>
+                                <Button
+                                    component={Link}
+                                    size="small"
+                                    variant="text"
+                                    color="primary"
+                                    href={`/verify?mode=token&id=${cert.token_id || cert.on_chain_id}`}
+                                    sx={{ fontWeight: 600 }}
+                                >
+                                    Verify Publicly
+                                </Button>
+                                <Button
+                                    size="small"
+                                    variant="text"
+                                    color="secondary"
+                                    startIcon={<QrCodeScannerIcon />}
+                                    onClick={() => setShowQR(true)}
+                                    sx={{ fontWeight: 600, color: '#34d399' }}
+                                >
+                                    QR Code
+                                </Button>
+                            </>
                         )}
                     </Box>
                 )}
             </CardContent>
+
+            {/* QR Code Modal for Verification */}
+            <QRCodeModal
+                open={showQR}
+                onClose={() => setShowQR(false)}
+                url={typeof window !== 'undefined' ? `${window.location.origin}/verify?mode=token&id=${cert.token_id || cert.on_chain_id}` : ''}
+                title={`Verify Token #${cert.token_id || cert.on_chain_id}`}
+            />
         </Card>
     );
 }
