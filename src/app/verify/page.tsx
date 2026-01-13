@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useReadContract } from "wagmi";
 import { useSearchParams } from "next/navigation";
 import { CERT_NFT_ABI, getCertNftAddress } from "../../lib/contracts";
+import { sepolia } from "wagmi/chains";
 import Link from "next/link";
 
 function VerifyContent() {
@@ -37,16 +38,18 @@ function VerifyContent() {
         address: nftAddress,
         functionName: "tokenURI",
         args: tokenId ? [BigInt(tokenId)] : undefined,
+        chainId: sepolia.id,
         query: {
             enabled: Boolean(searchMode === "token" && nftAddress && tokenId && !isNaN(Number(tokenId))),
         },
     });
 
-    const { data: owner, isLoading: loadingOwner } = useReadContract({
+    const { data: owner, isLoading: loadingOwner, error: errorOwner } = useReadContract({
         abi: CERT_NFT_ABI,
         address: nftAddress,
         functionName: "ownerOf",
         args: tokenId ? [BigInt(tokenId)] : undefined,
+        chainId: sepolia.id,
         query: {
             enabled: Boolean(searchMode === "token" && nftAddress && tokenId && !isNaN(Number(tokenId))),
         },
@@ -57,6 +60,7 @@ function VerifyContent() {
         address: nftAddress,
         functionName: "revoked",
         args: tokenId ? [BigInt(tokenId)] : undefined,
+        chainId: sepolia.id,
         query: {
             enabled: Boolean(searchMode === "token" && nftAddress && tokenId && !isNaN(Number(tokenId))),
         },
@@ -67,7 +71,16 @@ function VerifyContent() {
     const [txnData, setTxnData] = useState<any>(null);
     const [metadataError, setMetadataError] = useState("");
 
+    // Auto-verify when data becomes available
+    useEffect(() => {
+        if (searchMode === "token" && tokenURI && !metadata && !metadataError && !searching) {
+            handleVerify();
+        }
+    }, [tokenURI, searchMode]);
+
     const handleVerify = async () => {
+        if (searching) return; // Prevent double submission
+
         setMetadata(null);
         setWalletData(null);
         setTxnData(null);
@@ -76,10 +89,20 @@ function VerifyContent() {
 
         const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
 
-        if (searchMode === "token") {
-            if (!tokenId || isNaN(Number(tokenId))) { setSearching(false); return; }
-            if (tokenURI) {
-                try {
+        try {
+            if (searchMode === "token") {
+                if (!tokenId || isNaN(Number(tokenId))) {
+                    setSearching(false);
+                    return;
+                }
+
+                // If we don't have URI yet (maybe user clicked button before hook finished), wait or use hook data
+                // But the button should be disabled if loadingURI is true.
+                // If we are here, tokenURI should be available if we came from auto-effect.
+                // If manually clicked, we might not have it yet?
+                // Actually, manual click should probably just set the mode and let the effect handle it if using token mode.
+
+                if (tokenURI) {
                     const response = await fetch(`/api/proxy-metadata?url=${encodeURIComponent(tokenURI as string)}`);
                     if (response.ok) {
                         const data = await response.json();
@@ -87,13 +110,13 @@ function VerifyContent() {
                     } else {
                         setMetadataError("Failed to fetch metadata from IPFS");
                     }
-                } catch (error) {
-                    setMetadataError("Error fetching metadata");
+                } else if (!loadingURI) {
+                    // Hook finished but no URI? Means token doesn't exist or revoked check failed?
+                    // Actually owner check handles existence.
+                    if (!owner) setMetadataError("Token does not exist");
                 }
-            }
-        } else if (searchMode === "ipfs") {
-            if (!ipfsCid) { setSearching(false); return; }
-            try {
+            } else if (searchMode === "ipfs") {
+                if (!ipfsCid) { setSearching(false); return; }
                 const targetUrl = ipfsCid.startsWith("ipfs://") ? ipfsCid : `ipfs://${ipfsCid}`;
                 const response = await fetch(`/api/proxy-metadata?url=${encodeURIComponent(targetUrl)}`);
                 if (response.ok) {
@@ -102,12 +125,8 @@ function VerifyContent() {
                 } else {
                     setMetadataError("Invalid IPFS Code or content not found");
                 }
-            } catch (error) {
-                setMetadataError("Error fetching IPFS data");
-            }
-        } else if (searchMode === "wallet") {
-            if (!walletAddress) { setSearching(false); return; }
-            try {
+            } else if (searchMode === "wallet") {
+                if (!walletAddress) { setSearching(false); return; }
                 const response = await fetch(`${backendUrl}/api/wallet/${walletAddress}/certificates`, {
                     cache: 'no-store',
                     headers: { 'Pragma': 'no-cache', 'Cache-Control': 'no-cache' }
@@ -118,12 +137,8 @@ function VerifyContent() {
                 } else {
                     setMetadataError("Could not retrieve wallet data");
                 }
-            } catch (error) {
-                setMetadataError("Error connecting to server");
-            }
-        } else if (searchMode === "txn") {
-            if (!txHash) { setSearching(false); return; }
-            try {
+            } else if (searchMode === "txn") {
+                if (!txHash) { setSearching(false); return; }
                 const response = await fetch(`${backendUrl}/api/certificates/verify`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -134,15 +149,18 @@ function VerifyContent() {
                     setTxnData(data);
                     if (data.certificate?.token_id) {
                         setTokenId(data.certificate.token_id.toString());
+                        // Don't auto-switch mode immediately to avoid UI jump, let user click "View Certificate"
                     }
                 } else {
                     setMetadataError("Transaction verification failed");
                 }
-            } catch (error) {
-                setMetadataError("Error connecting to verification service");
             }
+        } catch (error) {
+            console.error("Verification Error:", error);
+            setMetadataError("Error verifying data");
+        } finally {
+            setSearching(false);
         }
-        setSearching(false);
     };
 
     const selectCertificate = (id: string) => {
@@ -520,7 +538,12 @@ function VerifyContent() {
                                 color: "#f87171",
                                 textAlign: "center"
                             }}>
-                                Token #{tokenId} does not exist on the blockchain
+                                <div>Token #{tokenId} does not exist on the blockchain</div>
+                                <div style={{ fontSize: 10, marginTop: 8, opacity: 0.8 }}>
+                                    Debug info: Contract: {nftAddress || "Missing"} <br />
+                                    Error: {errorOwner ? errorOwner.message : "None"} <br />
+                                    Failure Reason: {errorOwner ? (errorOwner as any).cause?.message : "Unknown"}
+                                </div>
                             </div>
                         )}
                     </div>

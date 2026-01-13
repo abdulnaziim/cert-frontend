@@ -4,7 +4,7 @@ import "@rainbow-me/rainbowkit/styles.css";
 import { RainbowKitProvider, getDefaultConfig } from "@rainbow-me/rainbowkit";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { WagmiProvider, http } from "wagmi";
-import { mainnet, sepolia, localhost } from "wagmi/chains";
+import { mainnet, sepolia, hardhat } from "wagmi/chains";
 import { ReactNode, useMemo } from "react";
 import { Toaster } from "react-hot-toast";
 import { createTheme, CssBaseline, ThemeProvider } from "@mui/material";
@@ -21,12 +21,12 @@ export function AppProviders({ children }: AppProvidersProps) {
     () =>
       getDefaultConfig({
         appName: "Cert Frontend",
-        projectId: process.env.NEXT_PUBLIC_WC_PROJECT_ID || "demo",
-        chains: [sepolia, mainnet, localhost],
+        projectId: process.env.NEXT_PUBLIC_WC_PROJECT_ID || "b56e18d47c72ab683b10814fe9495694",
+        chains: [sepolia, hardhat, mainnet],
         transports: {
           [sepolia.id]: http("https://ethereum-sepolia-rpc.publicnode.com"),
           [mainnet.id]: http(),
-          [localhost.id]: http(),
+          [hardhat.id]: http("http://127.0.0.1:8545"),
         },
         ssr: true,
       }),

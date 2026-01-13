@@ -55,10 +55,10 @@ export default function CertificateCard({ cert }: CertificateCardProps) {
                 abi: CERT_NFT_ABI,
                 address: nftAddress!,
                 functionName: "mint",
-                args: [(cert.recipient_address || "0x0000000000000000000000000000000000000000") as `0x${string}`, cert.ipfs_cid],
+                args: [(cert.recipient_address || address || "0x0000000000000000000000000000000000000000") as `0x${string}`, cert.ipfs_cid],
             });
 
-            toast.success("Transaction sent! Waiting...");
+            toast.success("Transaction sent! Waiting for confirmation...");
 
             if (publicClient) {
                 await publicClient.waitForTransactionReceipt({ hash });
@@ -72,12 +72,11 @@ export default function CertificateCard({ cert }: CertificateCardProps) {
                 body: JSON.stringify({ transaction_hash: hash })
             });
 
-            toast.success("Anchored successfully! Please refresh.");
+            toast.success("Anchored to Sepolia! Refreshing...");
             window.location.reload();
-            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */ }
         } catch (e: any) {
             console.error(e);
-            toast.error(e.shortMessage || "Minting failed");
+            toast.error(e.shortMessage || e.message || "Minting failed");
         } finally {
             setMinting(false);
         }
@@ -123,18 +122,7 @@ export default function CertificateCard({ cert }: CertificateCardProps) {
                     </Stack>
                 </Box>
 
-                {cert.transaction_hash ? (
-                    <Box sx={{ mt: 1, p: 2, bgcolor: 'rgba(255,255,255,0.03)', borderRadius: 2, fontFamily: 'monospace', fontSize: 13, border: '1px solid rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column' }}>
-                        <span style={{ color: '#94a3b8', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>Blockchain Evidence</span>
-                        <a
-                            href={`https://sepolia.etherscan.io/tx/${cert.transaction_hash}`}
-                            target="_blank" rel="noopener noreferrer"
-                            style={{ color: '#60a5fa', wordBreak: 'break-all', textDecoration: 'none' }}
-                        >
-                            {cert.transaction_hash} ↗
-                        </a>
-                    </Box>
-                ) : (cert.token_id || cert.on_chain_id) ? (
+                {(cert.token_id || cert.on_chain_id) ? (
                     <Box sx={{ mt: 1, p: 2, bgcolor: 'rgba(34, 197, 94, 0.1)', borderRadius: 2, fontFamily: 'monospace', fontSize: 13, border: '1px solid rgba(34, 197, 94, 0.2)', display: 'flex', flexDirection: 'column' }}>
                         <span style={{ color: '#4ade80', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>Blockchain Verified</span>
                         <a
@@ -143,6 +131,17 @@ export default function CertificateCard({ cert }: CertificateCardProps) {
                             style={{ color: '#4ade80', wordBreak: 'break-all', textDecoration: 'none', fontWeight: 600 }}
                         >
                             View NFT on Etherscan ↗
+                        </a>
+                    </Box>
+                ) : cert.transaction_hash ? (
+                    <Box sx={{ mt: 1, p: 2, bgcolor: 'rgba(255,255,255,0.03)', borderRadius: 2, fontFamily: 'monospace', fontSize: 13, border: '1px solid rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column' }}>
+                        <span style={{ color: '#94a3b8', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>Blockchain Evidence</span>
+                        <a
+                            href={`https://sepolia.etherscan.io/tx/${cert.transaction_hash}`}
+                            target="_blank" rel="noopener noreferrer"
+                            style={{ color: '#60a5fa', wordBreak: 'break-all', textDecoration: 'none' }}
+                        >
+                            {cert.transaction_hash} ↗
                         </a>
                     </Box>
                 ) : (
