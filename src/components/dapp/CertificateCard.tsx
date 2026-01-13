@@ -74,6 +74,7 @@ export default function CertificateCard({ cert }: CertificateCardProps) {
 
             toast.success("Anchored successfully! Please refresh.");
             window.location.reload();
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */ }
         } catch (e: any) {
             console.error(e);
             toast.error(e.shortMessage || "Minting failed");
@@ -147,7 +148,7 @@ export default function CertificateCard({ cert }: CertificateCardProps) {
                 ) : (
                     <Box sx={{ mt: 1, p: 2, bgcolor: 'rgba(234, 179, 8, 0.1)', borderRadius: 2, border: '1px dashed rgba(234, 179, 8, 0.3)', display: 'flex', flexDirection: 'column', gap: 1 }}>
                         <Typography variant="caption" sx={{ fontWeight: 600, color: '#facc15' }}>
-                            ⚠️ This certificate hasn't been anchored to the blockchain yet. Please re-issue or wait for sync.
+                            ⚠️ This certificate hasn&apos;t been anchored to the blockchain yet. Please re-issue or wait for sync.
                         </Typography>
                         {address && (
                             <Button

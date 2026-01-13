@@ -36,7 +36,9 @@ export default function StudentDashboard() {
                 // Map the response to our Certificate type
                 // json.certificates is array of { token_id, on_chain_data, metadata }
                 const validCerts = json.certificates
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     .filter((item: any) => item.metadata) // Only show ones we know about
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     .map((item: any) => ({
                         ...item.metadata,
                         token_id: item.token_id, // Ensure token_id comes from on-chain data
@@ -44,6 +46,7 @@ export default function StudentDashboard() {
                     }));
 
                 setCerts(validCerts);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } catch (e: any) {
                 console.error(e);
                 setError("Could not load your certificates. Please try again.");
