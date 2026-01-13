@@ -1,6 +1,7 @@
 "use client";
 
 import { AppBar, Toolbar, Typography, Box, Button } from "@mui/material";
+import { School as SchoolIcon } from "@mui/icons-material";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
 import { useEffect, useState } from "react";
@@ -50,7 +51,7 @@ export default function Header() {
             justifyContent: "center",
             fontSize: 20
           }}>
-            🎓
+            <SchoolIcon sx={{ fontSize: 24, color: 'white' }} />
           </div>
           <span style={{
             fontSize: 20,

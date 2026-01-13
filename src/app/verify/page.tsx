@@ -5,6 +5,7 @@ import { useReadContract } from "wagmi";
 import { useSearchParams } from "next/navigation";
 import { CERT_NFT_ABI, getCertNftAddress } from "../../lib/contracts";
 import { sepolia } from "wagmi/chains";
+import { School as SchoolIcon } from "@mui/icons-material";
 import Link from "next/link";
 
 function VerifyContent() {
@@ -202,7 +203,7 @@ function VerifyContent() {
                         justifyContent: "center",
                         fontSize: 20
                     }}>
-                        🎓
+                        <SchoolIcon sx={{ fontSize: 24, color: 'white' }} />
                     </div>
                     <span style={{
                         fontSize: 20,
@@ -596,7 +597,7 @@ function CertificateCard({ metadata, tokenId }: { metadata: any; tokenId: string
                 fontSize: 40,
                 margin: "0 auto 24px"
             }}>
-                🎓
+                <SchoolIcon sx={{ fontSize: 48, color: 'white' }} />
             </div>
             <h3 style={{ fontSize: 22, fontWeight: 800, color: "white", marginBottom: 8 }}>
                 {metadata.title || metadata.name || "Certificate"}

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useAccount } from "wagmi";
 import Link from "next/link";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { School as SchoolIcon } from "@mui/icons-material";
 import Header from "../components/Landing/Header";
 
 export default function Home() {
@@ -46,7 +47,7 @@ export default function Home() {
                     marginBottom: 32,
                     boxShadow: "0 20px 60px rgba(16, 185, 129, 0.4)"
                 }}>
-                    🎓
+                    <SchoolIcon sx={{ fontSize: 48, color: 'white' }} />
                 </div>
 
                 {/* Title */}
