@@ -51,11 +51,19 @@ export default function CertificateCard({ cert }: CertificateCardProps) {
 
         setMinting(true);
         try {
+            // Use connected wallet as recipient (required)
+            const recipientAddress = cert.recipient_address || address;
+            if (!recipientAddress) {
+                toast.error("No recipient address available");
+                setMinting(false);
+                return;
+            }
+
             const hash = await writeContractAsync({
                 abi: CERT_NFT_ABI,
                 address: nftAddress!,
                 functionName: "mint",
-                args: [(cert.recipient_address || address || "0x0000000000000000000000000000000000000000") as `0x${string}`, cert.ipfs_cid],
+                args: [recipientAddress as `0x${string}`, cert.ipfs_cid],
             });
 
             toast.success("Transaction sent! Waiting for confirmation...");
