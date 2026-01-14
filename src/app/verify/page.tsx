@@ -11,7 +11,8 @@ import Link from "next/link";
 function VerifyContent() {
     const searchParams = useSearchParams();
     const [searchMode, setSearchMode] = useState<"token" | "ipfs" | "wallet" | "txn">("token");
-    const [tokenId, setTokenId] = useState("");
+    const [inputTokenId, setInputTokenId] = useState("");
+    const [queryTokenId, setQueryTokenId] = useState("");
     const [ipfsCid, setIpfsCid] = useState("");
     const [walletAddress, setWalletAddress] = useState("");
     const [txHash, setTxHash] = useState("");
@@ -28,7 +29,10 @@ function VerifyContent() {
         if (mode === "token" || mode === "ipfs" || mode === "wallet" || mode === "txn") {
             setSearchMode(mode);
         }
-        if (id) setTokenId(id);
+        if (id) {
+            setInputTokenId(id);
+            setQueryTokenId(id);
+        }
         if (cid) setIpfsCid(cid);
         if (address) setWalletAddress(address);
         if (hash) setTxHash(hash);
@@ -38,10 +42,10 @@ function VerifyContent() {
         abi: CERT_NFT_ABI,
         address: nftAddress,
         functionName: "tokenURI",
-        args: tokenId ? [BigInt(tokenId)] : undefined,
+        args: queryTokenId ? [BigInt(queryTokenId)] : undefined,
         chainId: sepolia.id,
         query: {
-            enabled: Boolean(searchMode === "token" && nftAddress && tokenId && !isNaN(Number(tokenId))),
+            enabled: Boolean(searchMode === "token" && nftAddress && queryTokenId && !isNaN(Number(queryTokenId))),
         },
     });
 
@@ -49,10 +53,10 @@ function VerifyContent() {
         abi: CERT_NFT_ABI,
         address: nftAddress,
         functionName: "ownerOf",
-        args: tokenId ? [BigInt(tokenId)] : undefined,
+        args: queryTokenId ? [BigInt(queryTokenId)] : undefined,
         chainId: sepolia.id,
         query: {
-            enabled: Boolean(searchMode === "token" && nftAddress && tokenId && !isNaN(Number(tokenId))),
+            enabled: Boolean(searchMode === "token" && nftAddress && queryTokenId && !isNaN(Number(queryTokenId))),
         },
     });
 
@@ -60,10 +64,10 @@ function VerifyContent() {
         abi: CERT_NFT_ABI,
         address: nftAddress,
         functionName: "revoked",
-        args: tokenId ? [BigInt(tokenId)] : undefined,
+        args: queryTokenId ? [BigInt(queryTokenId)] : undefined,
         chainId: sepolia.id,
         query: {
-            enabled: Boolean(searchMode === "token" && nftAddress && tokenId && !isNaN(Number(tokenId))),
+            enabled: Boolean(searchMode === "token" && nftAddress && queryTokenId && !isNaN(Number(queryTokenId))),
         },
     });
 
@@ -72,16 +76,51 @@ function VerifyContent() {
     const [txnData, setTxnData] = useState<any>(null);
     const [metadataError, setMetadataError] = useState("");
 
-    // Auto-verify when data becomes available
+    // React to token data changes (both from manual search and URL params)
     useEffect(() => {
-        if (searchMode === "token" && tokenURI && !metadata && !metadataError && !searching) {
-            handleVerify();
+        if (searchMode !== "token") return;
+
+        // If still loading contract data, wait
+        if (loadingURI || loadingOwner || loadingRevoked) return;
+
+        // If we have a URI, fetch the metadata
+        if (tokenURI) {
+            // Only fetch if we are explicitly searching OR if we lack metadata (initial load)
+            // AND we aren't already displaying the correct metadata (check ID?)
+            // For simplicity, if 'searching' is true, we force fetch.
+            // If !metadata, we fetch.
+            if (searching || !metadata) {
+                const fetchMeta = async () => {
+                    try {
+                        const response = await fetch(`/api/proxy-metadata?url=${encodeURIComponent(tokenURI as string)}`);
+                        if (response.ok) {
+                            const data = await response.json();
+                            setMetadata(data);
+                            setMetadataError("");
+                        } else {
+                            setMetadataError("Failed to fetch metadata from IPFS");
+                        }
+                    } catch (e) {
+                        setMetadataError("Error fetching metadata");
+                    } finally {
+                        setSearching(false);
+                    }
+                };
+                fetchMeta();
+            }
+        } else if (searching) {
+            // Not loading, no URI, but we were searching.
+            // This means the token likely doesn't exist or verify failed.
+            // The UI already shows "Token does not exist" if !owner.
+            // So we just stop searching.
+            setSearching(false);
         }
-    }, [tokenURI, searchMode]);
+    }, [tokenURI, loadingURI, loadingOwner, loadingRevoked, searchMode, searching, metadata]);
 
     const handleVerify = async () => {
-        if (searching) return; // Prevent double submission
+        if (searching) return;
 
+        // Reset state
         setMetadata(null);
         setWalletData(null);
         setTxnData(null);
@@ -92,31 +131,21 @@ function VerifyContent() {
 
         try {
             if (searchMode === "token") {
-                if (!tokenId || isNaN(Number(tokenId))) {
+                if (!inputTokenId || isNaN(Number(inputTokenId))) {
                     setSearching(false);
                     return;
                 }
 
-                // If we don't have URI yet (maybe user clicked button before hook finished), wait or use hook data
-                // But the button should be disabled if loadingURI is true.
-                // If we are here, tokenURI should be available if we came from auto-effect.
-                // If manually clicked, we might not have it yet?
-                // Actually, manual click should probably just set the mode and let the effect handle it if using token mode.
+                // Update query ID to trigger hooks. 
+                // The useEffect above will detect the change/result and fetch metadata.
+                setQueryTokenId(inputTokenId);
 
-                if (tokenURI) {
-                    const response = await fetch(`/api/proxy-metadata?url=${encodeURIComponent(tokenURI as string)}`);
-                    if (response.ok) {
-                        const data = await response.json();
-                        setMetadata(data);
-                    } else {
-                        setMetadataError("Failed to fetch metadata from IPFS");
-                    }
-                } else if (!loadingURI) {
-                    // Hook finished but no URI? Means token doesn't exist or revoked check failed?
-                    // Actually owner check handles existence.
-                    if (!owner) setMetadataError("Token does not exist");
-                }
-            } else if (searchMode === "ipfs") {
+                // Note: We leave searching=true. The useEffect will set it to false when done.
+                return;
+            }
+
+            // Other modes handle fetching immediately
+            if (searchMode === "ipfs") {
                 if (!ipfsCid) { setSearching(false); return; }
                 const targetUrl = ipfsCid.startsWith("ipfs://") ? ipfsCid : `ipfs://${ipfsCid}`;
                 const response = await fetch(`/api/proxy-metadata?url=${encodeURIComponent(targetUrl)}`);
@@ -126,6 +155,7 @@ function VerifyContent() {
                 } else {
                     setMetadataError("Invalid IPFS Code or content not found");
                 }
+                setSearching(false);
             } else if (searchMode === "wallet") {
                 if (!walletAddress) { setSearching(false); return; }
                 const response = await fetch(`${backendUrl}/api/wallet/${walletAddress}/certificates`, {
@@ -138,6 +168,7 @@ function VerifyContent() {
                 } else {
                     setMetadataError("Could not retrieve wallet data");
                 }
+                setSearching(false);
             } else if (searchMode === "txn") {
                 if (!txHash) { setSearching(false); return; }
                 const response = await fetch(`${backendUrl}/api/certificates/verify`, {
@@ -149,24 +180,26 @@ function VerifyContent() {
                     const data = await response.json();
                     setTxnData(data);
                     if (data.certificate?.token_id) {
-                        setTokenId(data.certificate.token_id.toString());
-                        // Don't auto-switch mode immediately to avoid UI jump, let user click "View Certificate"
+                        const tid = data.certificate.token_id.toString();
+                        setInputTokenId(tid);
+                        setQueryTokenId(tid);
                     }
                 } else {
                     setMetadataError("Transaction verification failed");
                 }
+                setSearching(false);
             }
         } catch (error) {
             console.error("Verification Error:", error);
             setMetadataError("Error verifying data");
-        } finally {
             setSearching(false);
         }
     };
 
     const selectCertificate = (id: string) => {
         setSearchMode("token");
-        setTokenId(id);
+        setInputTokenId(id);
+        setQueryTokenId(id);
         setTimeout(() => document.getElementById('search-btn')?.click(), 800);
     };
 
@@ -282,14 +315,14 @@ function VerifyContent() {
                         <input
                             id="search-input"
                             type={searchMode === "token" ? "number" : "text"}
-                            value={searchMode === "token" ? tokenId : searchMode === "ipfs" ? ipfsCid : searchMode === "wallet" ? walletAddress : txHash}
+                            value={searchMode === "token" ? inputTokenId : searchMode === "ipfs" ? ipfsCid : searchMode === "wallet" ? walletAddress : txHash}
                             onChange={(e) => {
                                 let val = e.target.value.trim();
                                 if (val.includes("etherscan.io/tx/")) {
                                     const parts = val.split("tx/");
                                     if (parts[1]) val = parts[1].split("?")[0].split("/")[0];
                                 }
-                                if (searchMode === "token") setTokenId(val);
+                                if (searchMode === "token") setInputTokenId(val);
                                 else if (searchMode === "ipfs") setIpfsCid(val);
                                 else if (searchMode === "wallet") setWalletAddress(val);
                                 else setTxHash(val);
@@ -510,7 +543,7 @@ function VerifyContent() {
                                         />
                                     </div>
                                 ) : (
-                                    <CertificateCard metadata={metadata} tokenId={searchMode === "token" ? tokenId : "Portal"} />
+                                    <CertificateCard metadata={metadata} tokenId={searchMode === "token" ? queryTokenId : "Portal"} />
                                 )}
                             </div>
                         )}
@@ -530,7 +563,7 @@ function VerifyContent() {
                             </div>
                         )}
 
-                        {searchMode === "token" && !owner && !isLoading && tokenId && (
+                        {searchMode === "token" && !owner && !isLoading && queryTokenId && (
                             <div style={{
                                 padding: 16,
                                 background: "rgba(239, 68, 68, 0.1)",
@@ -539,7 +572,7 @@ function VerifyContent() {
                                 color: "#f87171",
                                 textAlign: "center"
                             }}>
-                                <div>Token #{tokenId} does not exist on the blockchain</div>
+                                <div>Token #{queryTokenId} does not exist on the blockchain</div>
                                 <div style={{ fontSize: 10, marginTop: 8, opacity: 0.8 }}>
                                     Debug info: Contract: {nftAddress || "Missing"} <br />
                                     Error: {errorOwner ? errorOwner.message : "None"} <br />
@@ -606,7 +639,7 @@ function CertificateCard({ metadata, tokenId }: { metadata: any; tokenId: string
                 Awarded to <strong>{metadata.recipient_name}</strong>
             </p>
             <div className="chip" style={{ marginBottom: 16 }}>
-                Token #{tokenId}
+                Token #{tokenId || "Portal"}
             </div>
             {metadata.description && (
                 <p style={{ fontSize: 14, color: "rgba(255,255,255,0.5)", lineHeight: 1.6 }}>
