@@ -242,6 +242,8 @@ export default function CertificatesApiClient() {
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 label="Recipient Name"
+                name="recipientName"
+                autoComplete="name"
                 fullWidth
                 required
                 value={recipientName}
@@ -253,6 +255,8 @@ export default function CertificatesApiClient() {
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 label="Recipient Email"
+                name="recipientEmail"
+                autoComplete="email"
                 type="email"
                 fullWidth
                 required
@@ -265,6 +269,8 @@ export default function CertificatesApiClient() {
             <Grid size={{ xs: 12 }}>
               <TextField
                 label="Student Wallet Address (0x...)"
+                name="recipientAddress"
+                autoComplete="on"
                 placeholder="Required for direct issuance"
                 fullWidth
                 required
@@ -306,7 +312,7 @@ export default function CertificatesApiClient() {
                 fullWidth
                 sx={{ height: 50, borderStyle: 'dashed' }}
               >
-                {file ? file.name : "Upload PDF Document (Optional)"}
+                {file ? file.name : "Upload PDF Document"}
                 <input
                   type="file"
                   hidden

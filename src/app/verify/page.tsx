@@ -262,7 +262,7 @@ function VerifyContent() {
                     marginBottom: 16,
                     letterSpacing: "-0.03em"
                 }}>
-                    Verify Any <span className="text-gradient">Certificate</span>
+                    Verify The <span className="text-gradient">Certificate</span>
                 </h1>
                 <p style={{
                     fontSize: 18,
@@ -313,7 +313,9 @@ function VerifyContent() {
                 <div className="glass-card" style={{ padding: 24 }}>
                     <div style={{ display: "flex", gap: 12 }}>
                         <input
-                            id="search-input"
+                            id={`search-input-${searchMode}`}
+                            name={`search-${searchMode}`}
+                            autoComplete="on"
                             type={searchMode === "token" ? "number" : "text"}
                             value={searchMode === "token" ? inputTokenId : searchMode === "ipfs" ? ipfsCid : searchMode === "wallet" ? walletAddress : txHash}
                             onChange={(e) => {
@@ -490,6 +492,52 @@ function VerifyContent() {
                                     <p style={{ color: "rgba(255,255,255,0.6)" }}>
                                         Issued to: <strong style={{ color: "white" }}>{metadata.recipient_name}</strong>
                                     </p>
+                                </div>
+
+                                {/* Detailed Metadata Stats */}
+                                <div style={{
+                                    display: "grid",
+                                    gridTemplateColumns: "repeat(2, 1fr)",
+                                    gap: 16,
+                                    marginBottom: 24
+                                }}>
+                                    <div className="glass-card-light" style={{ padding: 16 }}>
+                                        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", fontWeight: 700, marginBottom: 4 }}>
+                                            Issue Date
+                                        </div>
+                                        <div style={{ color: "white", fontWeight: 600 }}>
+                                            {metadata.issued_at ? new Date(metadata.issued_at).toLocaleDateString() : 'N/A'}
+                                        </div>
+                                    </div>
+                                    <div className="glass-card-light" style={{ padding: 16 }}>
+                                        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", fontWeight: 700, marginBottom: 4 }}>
+                                            Type
+                                        </div>
+                                        <div style={{ color: "white", fontWeight: 600 }}>
+                                            {metadata.certificate_type || 'Certification'}
+                                        </div>
+                                    </div>
+                                    {metadata.recipient_email && (
+                                        <div className="glass-card-light" style={{ padding: 16, gridColumn: "span 2" }}>
+                                            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", fontWeight: 700, marginBottom: 4 }}>
+                                                Recipient Email
+                                            </div>
+                                            <div style={{ color: "white", fontWeight: 600 }}>
+                                                {metadata.recipient_email}
+                                            </div>
+                                        </div>
+                                    )}
+                                    {metadata.description && (
+                                        <div className="glass-card-light" style={{ padding: 16, gridColumn: "span 2" }}>
+                                            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", fontWeight: 700, marginBottom: 4 }}>
+                                                Description
+                                            </div>
+                                            <div style={{ color: "rgba(255,255,255,0.8)", fontSize: 14, lineHeight: 1.6 }}>
+                                                {metadata.description}
+                                            </div>
+                                        </div>
+                                    )}
+
                                 </div>
 
                                 {/* IPFS Source */}
