@@ -74,6 +74,7 @@ export default function CertificatesApiClient() {
   const [title, setTitle] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [file, setFile] = useState<File | null>(null);
+  const [templateType, setTemplateType] = useState<string>("default");
 
   async function fetchCertificates() {
     setLoading(true);
@@ -111,7 +112,11 @@ export default function CertificatesApiClient() {
 
       formData.append("title", title.trim());
       if (description) formData.append("description", description.trim());
-      if (file) formData.append("certificate_file", file);
+      if (file) {
+        formData.append("certificate_file", file);
+      } else {
+        formData.append("template_type", templateType);
+      }
       formData.append("skip_blockchain", "1"); // IMPORTANT: Don't mint on server
 
       const res = await fetch(`${backendUrl}/api/certificates`, {
@@ -305,6 +310,21 @@ export default function CertificatesApiClient() {
             </Grid>
 
             <Grid size={{ xs: 12 }}>
+              <TextField
+                select
+                label="Certificate Template"
+                fullWidth
+                value={templateType}
+                onChange={(e) => setTemplateType(e.target.value)}
+                SelectProps={{ native: true }}
+              >
+                <option value="default">Default Template</option>
+                <option value="iedc">IEDC Template</option>
+                <option value="nss">NSS Template</option>
+              </TextField>
+            </Grid>
+
+            <Grid size={{ xs: 12 }}>
               <Button
                 component="label"
                 variant="outlined"
@@ -312,7 +332,7 @@ export default function CertificatesApiClient() {
                 fullWidth
                 sx={{ height: 50, borderStyle: 'dashed' }}
               >
-                {file ? file.name : "Upload PDF Document"}
+                {file ? file.name : "Upload PDF Document (Optional)"}
                 <input
                   type="file"
                   hidden
