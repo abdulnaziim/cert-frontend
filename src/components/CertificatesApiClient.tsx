@@ -318,7 +318,7 @@ export default function CertificatesApiClient() {
                 onChange={(e) => setTemplateType(e.target.value)}
                 SelectProps={{ native: true }}
               >
-                <option value="default">Default Template</option>
+                <option value="default">Convocation Certificate</option>
                 <option value="iedc">IEDC Template</option>
                 <option value="nss">NSS Template</option>
               </TextField>

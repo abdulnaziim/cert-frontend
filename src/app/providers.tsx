@@ -24,7 +24,7 @@ export function AppProviders({ children }: AppProvidersProps) {
         projectId: process.env.NEXT_PUBLIC_WC_PROJECT_ID || "b56e18d47c72ab683b10814fe9495694",
         chains: [sepolia, hardhat, mainnet],
         transports: {
-          [sepolia.id]: http("https://ethereum-sepolia-rpc.publicnode.com"),
+          [sepolia.id]: http(process.env.NEXT_PUBLIC_RPC_URL || "https://sepolia.infura.io/v3/11c69b2993f54226a030db8ba560fed9"),
           [mainnet.id]: http(),
           [hardhat.id]: http("http://127.0.0.1:8545"),
         },
