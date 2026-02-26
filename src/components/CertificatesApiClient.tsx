@@ -75,6 +75,7 @@ export default function CertificatesApiClient() {
   const [description, setDescription] = useState<string>("");
   const [file, setFile] = useState<File | null>(null);
   const [templateType, setTemplateType] = useState<string>("default");
+  const [enrollmentNumber, setEnrollmentNumber] = useState<string>("");
 
   async function fetchCertificates() {
     setLoading(true);
@@ -116,6 +117,9 @@ export default function CertificatesApiClient() {
         formData.append("certificate_file", file);
       } else {
         formData.append("template_type", templateType);
+        if (templateType === "nss" && enrollmentNumber) {
+          formData.append("enrollment_number", enrollmentNumber);
+        }
       }
       formData.append("skip_blockchain", "1"); // IMPORTANT: Don't mint on server
 
@@ -176,6 +180,7 @@ export default function CertificatesApiClient() {
       setRecipientAddress("");
       setTitle("");
       setDescription("");
+      setEnrollmentNumber("");
       setFile(null);
       await fetchCertificates();
 
@@ -323,6 +328,19 @@ export default function CertificatesApiClient() {
                 <option value="nss">NSS Template</option>
               </TextField>
             </Grid>
+
+            {templateType === "nss" && (
+              <Grid size={{ xs: 12 }}>
+                <TextField
+                  label="Enrollment Number"
+                  fullWidth
+                  required
+                  value={enrollmentNumber}
+                  onChange={(e) => setEnrollmentNumber(e.target.value)}
+                  placeholder="e.g. 12345"
+                />
+              </Grid>
+            )}
 
             <Grid size={{ xs: 12 }}>
               <Button
