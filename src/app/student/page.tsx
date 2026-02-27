@@ -14,7 +14,7 @@ export default function StudentDashboard() {
     const [error, setError] = useState("");
 
     const backendUrl = useMemo(() => {
-        return process.env.NEXT_PUBLIC_BACKEND_URL?.replace(/\/$/, "") || "http://127.0.0.1:8000";
+        return process.env.NEXT_PUBLIC_BACKEND_URL?.replace(/\/$/, "") || "https://nft.infineur.com";
     }, []);
 
     useEffect(() => {

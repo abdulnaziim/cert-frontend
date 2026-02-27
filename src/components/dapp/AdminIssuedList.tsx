@@ -21,7 +21,7 @@ type PaginatedResponse = {
 
 export default function AdminIssuedList() {
     const backendUrl = useMemo(() => {
-        return process.env.NEXT_PUBLIC_BACKEND_URL?.replace(/\/$/, "") || "http://127.0.0.1:8000";
+        return process.env.NEXT_PUBLIC_BACKEND_URL?.replace(/\/$/, "") || "https://nft.infineur.com";
     }, []);
 
     const [loading, setLoading] = useState<boolean>(false);

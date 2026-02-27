@@ -73,7 +73,7 @@ export default function CertificateCard({ cert }: CertificateCardProps) {
             }
 
             // Update backend
-            const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL?.replace(/\/$/, "") || "http://127.0.0.1:8000";
+            const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL?.replace(/\/$/, "") || "https://nft.infineur.com";
             await fetch(`${backendUrl}/api/certificates/${cert.id}/confirm`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
